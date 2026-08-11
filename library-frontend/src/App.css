@@ -1,0 +1,763 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f5f7fb;
+  color: #111827;
+}
+
+.app {
+  min-height: 100vh;
+}
+
+/* =========================
+   NAVBAR
+========================= */
+
+.navbar {
+  height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  background: linear-gradient(135deg, #172554, #1e3a8a);
+  color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+}
+
+.navbar h2 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0.3px;
+}
+
+.admin {
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 0.12);
+  padding: 8px 14px;
+  border-radius: 20px;
+}
+
+/* =========================
+   LAYOUT
+========================= */
+
+.layout {
+  display: flex;
+  min-height: calc(100vh - 65px);
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar {
+  width: 230px;
+  padding: 28px 16px;
+  background: linear-gradient(180deg, #111827, #172033);
+  color: white;
+  flex-shrink: 0;
+}
+
+.sidebar h2,
+.sidebar h3 {
+  margin-top: 0;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 25px;
+}
+
+.sidebar li {
+  padding: 13px 15px;
+  margin-bottom: 7px;
+  cursor: pointer;
+  border-radius: 8px;
+  color: #d1d5db;
+  transition: all 0.2s ease;
+}
+
+.sidebar li:hover {
+  background-color: #374151;
+  color: white;
+  transform: translateX(3px);
+}
+
+/* =========================
+   MAIN CONTENT
+========================= */
+
+.content {
+  flex: 1;
+  padding: 30px;
+  min-width: 0;
+}
+
+/* =========================
+   GENERAL HEADINGS
+========================= */
+
+.content h1 {
+  margin-top: 0;
+  margin-bottom: 25px;
+  font-size: 30px;
+  color: #172554;
+}
+
+.content h2 {
+  color: #1e293b;
+}
+
+/* =========================
+   DASHBOARD
+========================= */
+
+.dashboard {
+  flex: 1;
+  padding: 0;
+  background-color: transparent;
+}
+
+.dashboard h1 {
+  margin-top: 0;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.card {
+  background-color: white;
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+}
+
+.card h3 {
+  margin-top: 0;
+  color: #475569;
+}
+
+.card p {
+  font-size: 30px;
+  font-weight: bold;
+  margin-bottom: 0;
+  color: #1d4ed8;
+}
+
+/* =========================
+   PAGE HEADER
+========================= */
+
+.books-page {
+  width: 100%;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 25px;
+}
+
+.page-header h1 {
+  margin: 0 0 5px 0;
+  font-size: 32px;
+}
+
+.page-header p {
+  margin: 0;
+  color: #6b7280;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+button {
+  font-family: inherit;
+}
+
+.primary-button {
+  border: none;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  padding: 10px 18px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.primary-button:hover {
+  background: #1e40af;
+  transform: translateY(-1px);
+}
+
+.secondary-button {
+  border: 1px solid #d1d5db;
+  background-color: white;
+  color: #374151;
+  padding: 10px 18px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.secondary-button:hover {
+  background-color: #f3f4f6;
+}
+
+/* =========================
+   ADD / EDIT FORMS
+========================= */
+
+.book-form,
+.borrow-form {
+  background-color: white;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.book-form h2,
+.borrow-form h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  margin-bottom: 7px;
+  font-weight: bold;
+  color: #374151;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 14px;
+  background-color: white;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus,
+.search-section input:focus,
+.borrow-form input:focus,
+.borrow-form select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* =========================
+   SEARCH
+========================= */
+
+.search-section {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  background-color: white;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.05);
+}
+
+.search-section input {
+  flex: 1;
+  max-width: 400px;
+  padding: 11px;
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+  font-size: 14px;
+}
+
+/* =========================
+   BOOKS TABLE
+========================= */
+
+.books-table-container {
+  background-color: white;
+  border-radius: 12px;
+  overflow-x: auto;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.books-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 850px;
+}
+
+.books-table th {
+  background-color: #172554;
+  color: white;
+  padding: 14px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.books-table td {
+  padding: 14px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.books-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.books-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.book-title {
+  font-weight: bold;
+  color: #111827;
+}
+
+/* =========================
+   BOOK CARDS
+========================= */
+
+.books-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.book-card {
+  background-color: white;
+  padding: 22px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  transition: all 0.2s ease;
+}
+
+.book-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1);
+}
+
+.book-card h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #1e3a8a;
+}
+
+.book-card p {
+  color: #4b5563;
+  margin: 8px 0;
+}
+
+/* =========================
+   COPY STATUS
+========================= */
+
+.stock {
+  display: inline-block;
+  min-width: 35px;
+  text-align: center;
+  padding: 5px 9px;
+  border-radius: 15px;
+  font-weight: bold;
+}
+
+.stock.available {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.stock.unavailable {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* =========================
+   ACTION BUTTONS
+========================= */
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-button,
+.delete-button {
+  border: none;
+  padding: 7px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s ease;
+}
+
+.edit-button {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.edit-button:hover {
+  background-color: #bfdbfe;
+}
+
+.delete-button {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.delete-button:hover {
+  background-color: #fecaca;
+}
+
+/* =========================
+   AUTHORS
+========================= */
+
+.authors-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.author-card {
+  background-color: white;
+  padding: 22px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.author-card h3 {
+  margin-top: 0;
+  color: #1e3a8a;
+}
+
+.author-card p {
+  color: #6b7280;
+}
+
+/* =========================
+   CATEGORIES
+========================= */
+
+.categories-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.category-card {
+  background-color: white;
+  padding: 22px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.category-card h3 {
+  margin-top: 0;
+  color: #1e3a8a;
+}
+
+.category-card p {
+  color: #6b7280;
+}
+
+/* =========================
+   MEMBERS
+========================= */
+
+.members-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.member-card {
+  background-color: white;
+  padding: 22px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.member-card h3 {
+  margin-top: 0;
+  color: #1e3a8a;
+}
+
+.member-card p {
+  color: #4b5563;
+  margin: 7px 0;
+}
+
+/* =========================
+   BORROW & RETURN
+========================= */
+
+.borrow-form select,
+.borrow-form input {
+  display: block;
+  width: 100%;
+  max-width: 500px;
+  padding: 11px;
+  margin-top: 7px;
+  margin-bottom: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+  font-family: inherit;
+  background-color: white;
+}
+
+.borrow-form label {
+  font-weight: bold;
+  color: #374151;
+}
+
+.borrow-form button,
+.borrow-card button {
+  border: none;
+  background-color: #2563eb;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.borrow-form button:hover,
+.borrow-card button:hover {
+  background-color: #1d4ed8;
+}
+
+/* =========================
+   BORROWING RECORDS
+========================= */
+
+.borrow-list,
+.overdue-list {
+  margin-bottom: 30px;
+}
+
+.borrow-list h2,
+.overdue-list h2 {
+  margin-bottom: 18px;
+}
+
+.borrow-card {
+  background-color: white;
+  padding: 22px;
+  margin-bottom: 15px;
+  border-radius: 12px;
+  border-left: 5px solid #2563eb;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.borrow-card h3 {
+  margin-top: 0;
+  color: #1e3a8a;
+}
+
+.borrow-card p {
+  margin: 7px 0;
+  color: #4b5563;
+}
+
+/* =========================
+   OVERDUE
+========================= */
+
+.overdue-card {
+  background-color: #fff7ed;
+  padding: 20px;
+  margin-bottom: 15px;
+  border-radius: 12px;
+  border-left: 5px solid #f97316;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.05);
+}
+
+.overdue-card h3 {
+  margin-top: 0;
+  color: #c2410c;
+}
+
+.overdue-card p {
+  color: #7c2d12;
+}
+
+/* =========================
+   EMPTY STATE
+========================= */
+
+.empty-books,
+.empty-state {
+  text-align: center;
+  padding: 50px 20px;
+  background-color: white;
+  border-radius: 12px;
+}
+
+.empty-books h3,
+.empty-state h3 {
+  margin-bottom: 8px;
+}
+
+.empty-books p,
+.empty-state p {
+  color: #6b7280;
+}
+
+/* =========================
+   GENERAL FORM INPUTS
+========================= */
+
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 1000px) {
+
+  .sidebar {
+    width: 200px;
+  }
+
+  .content {
+    padding: 20px;
+  }
+
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-group.full-width {
+    grid-column: auto;
+  }
+
+  .categories-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 750px) {
+
+  .books-list,
+  .authors-list,
+  .members-list {
+    grid-template-columns: 1fr;
+  }
+
+  .categories-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    padding: 15px;
+  }
+
+  .sidebar ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 15px;
+  }
+
+  .sidebar li {
+    margin-bottom: 0;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .page-header {
+    align-items: flex-start;
+    gap: 15px;
+    flex-direction: column;
+  }
+
+  .search-section {
+    flex-wrap: wrap;
+  }
+
+  .search-section input {
+    width: 100%;
+    max-width: none;
+  }
+
+  .content {
+    padding: 15px;
+  }
+
+  .navbar {
+    padding: 0 15px;
+  }
+}
