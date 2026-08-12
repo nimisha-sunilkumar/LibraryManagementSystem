@@ -3,34 +3,37 @@ using LibraryApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services
+// Add services to the container.
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<LibraryDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("ReactPolicy", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173")
+            .AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
 });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddDbContext<LibraryDbContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Enable Swagger in both Development and Production
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+}
 
-app.UseHttpsRedirection();
-app.UseCors("ReactPolicy");
+app.UseCors("AllowFrontend");
+
+// app.UseHttpsRedirection();
+
 app.UseAuthorization();
 
 app.MapControllers();
