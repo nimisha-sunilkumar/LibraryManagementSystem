@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+const API_URL = import.meta.env.VITE_API_URL
 
 function Authors() {
   const [authors, setAuthors] = useState([])
@@ -24,7 +25,7 @@ function Authors() {
 
   // Get all authors
   const fetchAuthors = () => {
-    fetch('http://localhost:5213/api/Authors')
+    fetch(`${API_URL}/api/Authors`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch authors')
@@ -55,16 +56,13 @@ function Authors() {
     }
 
     try {
-      const response = await fetch(
-        'http://localhost:5213/api/Authors',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(newAuthor)
-        }
-      )
+      const response = await fetch(`${API_URL}/api/Authors`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(newAuthor)
+})
 
       if (!response.ok) {
         throw new Error('Failed to add author')
@@ -85,16 +83,13 @@ function Authors() {
     event.preventDefault()
 
     try {
-      const response = await fetch(
-        `http://localhost:5213/api/Authors/${editingAuthorId}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(newAuthor)
-        }
-      )
+      const response = await fetch(`${API_URL}/api/Authors/${editingAuthorId}`, {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(newAuthor)
+})
 
       if (!response.ok) {
         throw new Error('Failed to update author')
@@ -133,12 +128,9 @@ function Authors() {
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:5213/api/Authors/${id}`,
-        {
-          method: 'DELETE'
-        }
-      )
+      const response = await fetch(`${API_URL}/api/Authors/${id}`, {
+  method: 'DELETE'
+})
 
       if (!response.ok) {
         throw new Error('Failed to delete author')

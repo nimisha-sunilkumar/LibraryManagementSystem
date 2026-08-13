@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+const API_URL = import.meta.env.VITE_API_URL
+
 function Borrow() {
   const [books, setBooks] = useState([])
   const [members, setMembers] = useState([])
@@ -18,9 +20,7 @@ function Borrow() {
   // =========================
   const fetchBooks = async () => {
     try {
-      const response = await fetch(
-        'http://localhost:5213/api/Books'
-      )
+      const response = await fetch(`${API_URL}/api/Books`)
 
       if (!response.ok) {
         throw new Error('Failed to fetch books')
@@ -38,9 +38,7 @@ function Borrow() {
   // =========================
   const fetchMembers = async () => {
     try {
-      const response = await fetch(
-        'http://localhost:5213/api/Members'
-      )
+      const response = await fetch(`${API_URL}/api/Members`)
 
       if (!response.ok) {
         throw new Error('Failed to fetch members')
@@ -58,9 +56,7 @@ function Borrow() {
   // =========================
   const fetchBorrows = async () => {
     try {
-      const response = await fetch(
-        'http://localhost:5213/api/Borrows'
-      )
+      const response = await fetch(`${API_URL}/api/Borrows`)
 
       if (!response.ok) {
         throw new Error('Failed to fetch borrowing records')
@@ -78,9 +74,7 @@ function Borrow() {
   // =========================
   const fetchOverdueBooks = async () => {
     try {
-      const response = await fetch(
-        'http://localhost:5213/api/Borrows/overdue'
-      )
+      const response = await fetch(`${API_URL}/api/Borrows/overdue`)
 
       // Backend returns 404 when there are no overdue books
       if (response.status === 404) {
@@ -126,27 +120,29 @@ function Borrow() {
       return
     }
 
+    // Check due date
+    if (borrowData.dueDate < borrowData.borrowDate) {
+      alert('Due date cannot be before the borrow date.')
+      return
+    }
+
     try {
-      const response = await fetch(
-        'http://localhost:5213/api/Borrows',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            bookId: Number(borrowData.bookId),
-            memberId: Number(borrowData.memberId),
-            borrowDate: borrowData.borrowDate,
-            dueDate: borrowData.dueDate
-          })
-        }
-      )
+      const response = await fetch(`${API_URL}/api/Borrows`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(borrowData)
+      })
 
       const data = await response.json()
 
       if (!response.ok) {
-        alert(data)
+        alert(
+          typeof data === 'string'
+            ? data
+            : 'Failed to borrow the book.'
+        )
         return
       }
 
@@ -162,7 +158,6 @@ function Borrow() {
       await fetchBooks()
       await fetchBorrows()
       await fetchOverdueBooks()
-
     } catch (error) {
       console.error('Error borrowing book:', error)
       alert('Something went wrong while borrowing the book.')
@@ -173,48 +168,46 @@ function Borrow() {
   // RETURN BOOK
   // =========================
   const handleReturnBook = async (borrowId) => {
-    const confirmed = window.confirm(
-      'Are you sure you want to return this book?'
-    )
+  const confirmed = window.confirm(
+    'Are you sure you want to return this book?'
+  )
 
-    if (!confirmed) {
+  if (!confirmed) {
+    return
+  }
+
+  try {
+    const returnData = {
+      borrowId: borrowId,
+      returnDate: new Date().toISOString().split('T')[0]
+    }
+
+    const response = await fetch(`${API_URL}/api/Borrows/return`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(returnData)
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      alert(data)
       return
     }
 
-    try {
-      const response = await fetch(
-        'http://localhost:5213/api/Borrows/return',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            borrowId: borrowId,
-            returnDate: new Date().toISOString()
-          })
-        }
-      )
+    alert('Book returned successfully!')
 
-      const data = await response.json()
+    await fetchBooks()
+    await fetchBorrows()
+    await fetchOverdueBooks()
 
-      if (!response.ok) {
-        alert(data)
-        return
-      }
-
-      alert('Book returned successfully!')
-
-      await fetchBooks()
-      await fetchBorrows()
-      await fetchOverdueBooks()
-
-    } catch (error) {
-      console.error('Error returning book:', error)
-      alert('Something went wrong while returning the book.')
-    }
+  } catch (error) {
+    console.error('Error returning book:', error)
+    alert('Something went wrong while returning the book.')
   }
-
+}
   return (
     <div>
 
@@ -229,6 +222,8 @@ function Borrow() {
         <h2>Borrow a Book</h2>
 
         <form onSubmit={handleBorrowBook}>
+
+          {/* BOOK */}
 
           <label>Book</label>
 
@@ -259,6 +254,8 @@ function Borrow() {
 
           <br />
 
+          {/* MEMBER */}
+
           <label>Member</label>
 
           <select
@@ -288,6 +285,8 @@ function Borrow() {
 
           <br />
 
+          {/* BORROW DATE */}
+
           <label>Borrow Date</label>
 
           <input
@@ -303,11 +302,14 @@ function Borrow() {
 
           <br />
 
+          {/* DUE DATE */}
+
           <label>Due Date</label>
 
           <input
             type="date"
             value={borrowData.dueDate}
+            min={borrowData.borrowDate}
             onChange={(event) =>
               setBorrowData({
                 ...borrowData,
@@ -348,16 +350,20 @@ function Borrow() {
             </p>
 
             <p>
-              Borrow Date: {borrow.borrowDate}
+              Borrow Date:{' '}
+              {new Date(borrow.borrowDate).toLocaleDateString()}
             </p>
 
             <p>
-              Due Date: {borrow.dueDate}
+              Due Date:{' '}
+              {new Date(borrow.dueDate).toLocaleDateString()}
             </p>
 
             <p>
               Return Date:{' '}
-              {borrow.returnDate || 'Not returned'}
+              {borrow.returnDate
+                ? new Date(borrow.returnDate).toLocaleDateString()
+                : 'Not returned'}
             </p>
 
             <p>
@@ -408,7 +414,8 @@ function Borrow() {
             </p>
 
             <p>
-              Due Date: {book.dueDate}
+              Due Date:{' '}
+              {new Date(book.dueDate).toLocaleDateString()}
             </p>
 
             <p>

@@ -1,24 +1,25 @@
 import { useEffect, useState } from 'react'
+const API_URL = import.meta.env.VITE_API_URL
 
 function Dashboard() {
   const [dashboard, setDashboard] = useState(null)
 
   useEffect(() => {
-    fetch('http://localhost:5213/api/Dashboard')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to fetch dashboard data')
-        }
+  fetch(`${API_URL}/api/Dashboard`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch dashboard')
+      }
 
-        return response.json()
-      })
-      .then(data => {
-        setDashboard(data)
-      })
-      .catch(error => {
-        console.error('Error fetching dashboard:', error)
-      })
-  }, [])
+      return response.json()
+    })
+    .then(data => {
+      setDashboard(data)
+    })
+    .catch(error => {
+      console.error('Error fetching dashboard:', error)
+    })
+}, [])
 
   if (!dashboard) {
     return <p>Loading dashboard...</p>

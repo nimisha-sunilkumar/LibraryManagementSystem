@@ -19,6 +19,7 @@ public class Book
     public int CategoryId { get; set; }
 
     public Category? Category { get; set; }
+
     // Navigation Property
     public ICollection<BookAuthor> BookAuthors { get; set; } = new List<BookAuthor>();
 

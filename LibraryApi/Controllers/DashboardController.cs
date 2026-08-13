@@ -36,7 +36,7 @@ public class DashboardController : ControllerBase
 
             // Currently borrowed copies
             BooksBorrowed = await _context.Borrows
-                .CountAsync(b => b.Status == "Issued"),
+                .CountAsync(b => b.ReturnDate == null),
 
             // Currently available copies
             BooksAvailable = await _context.Books

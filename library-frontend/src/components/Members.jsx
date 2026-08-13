@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+const API_URL = import.meta.env.VITE_API_URL
 
 function Members() {
   const [members, setMembers] = useState([])
@@ -32,7 +33,7 @@ function Members() {
   // GET ALL MEMBERS
   // -----------------------------
   const fetchMembers = () => {
-    fetch('http://localhost:5213/api/Members')
+    fetch(`${API_URL}/api/Members`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch members')
@@ -80,20 +81,13 @@ function Members() {
     event.preventDefault()
 
     try {
-      const response = await fetch(
-        'http://localhost:5213/api/Members',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-         body: JSON.stringify({
-  ...newMember,
-  year: Number(newMember.year),
-  semester: Number(newMember.semester)
+      const response = await fetch(`${API_URL}/api/Members`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(newMember)
 })
-        }
-      )
 
       if (!response.ok) {
         throw new Error('Failed to add member')
@@ -139,20 +133,13 @@ function Members() {
     event.preventDefault()
 
     try {
-      const response = await fetch(
-        `http://localhost:5213/api/Members/${editingMemberId}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-       body: JSON.stringify({
-  ...newMember,
-  year: Number(newMember.year),
-  semester: Number(newMember.semester)
+      const response = await fetch(`${API_URL}/api/Members/${editingMemberId}`, {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(newMember)
 })
-        }
-      )
 
       if (!response.ok) {
         throw new Error('Failed to update member')
@@ -180,12 +167,9 @@ function Members() {
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:5213/api/Members/${id}`,
-        {
-          method: 'DELETE'
-        }
-      )
+      const response = await fetch(`${API_URL}/api/Members/${id}`, {
+  method: 'DELETE'
+})
 
       if (!response.ok) {
         throw new Error('Failed to delete member')
@@ -203,58 +187,56 @@ function Members() {
   // SEARCH MEMBERS
   // -----------------------------
   const searchMembers = async () => {
-    const params = new URLSearchParams()
+  const params = new URLSearchParams()
 
-    if (search.name.trim()) {
-      params.append('name', search.name.trim())
-    }
-
-    if (search.admissionNumber.trim()) {
-      params.append(
-        'admissionNumber',
-        search.admissionNumber.trim()
-      )
-    }
-
-    if (search.department.trim()) {
-      params.append(
-        'department',
-        search.department.trim()
-      )
-    }
-
-    if (search.year) {
-      params.append('year', search.year)
-    }
-
-    if (search.semester) {
-      params.append('semester', search.semester)
-    }
-
-    if (params.toString() === '') {
-      fetchMembers()
-      return
-    }
-
-    try {
-      const response = await fetch(
-        `http://localhost:5213/api/Members/search?${params.toString()}`
-      )
-
-      if (!response.ok) {
-        throw new Error('No members found')
-      }
-
-      const data = await response.json()
-
-      setMembers(data)
-    } catch (error) {
-      console.error('Error searching members:', error)
-
-      setMembers([])
-    }
+  if (search.name.trim()) {
+    params.append('name', search.name.trim())
   }
 
+  if (search.admissionNumber.trim()) {
+    params.append(
+      'admissionNumber',
+      search.admissionNumber.trim()
+    )
+  }
+
+  if (search.department.trim()) {
+    params.append(
+      'department',
+      search.department.trim()
+    )
+  }
+
+  if (search.year) {
+    params.append('year', search.year)
+  }
+
+  if (search.semester) {
+    params.append('semester', search.semester)
+  }
+
+  if (params.toString() === '') {
+    fetchMembers()
+    return
+  }
+
+  try {
+    const response = await fetch(
+      `${API_URL}/api/Members/search?${params.toString()}`
+    )
+
+    if (!response.ok) {
+      throw new Error('No members found')
+    }
+
+    const data = await response.json()
+    setMembers(data)
+
+  } catch (error) {
+    console.error('Error searching members:', error)
+    setMembers([])
+  }
+}
   // -----------------------------
   // CLEAR SEARCH
   // -----------------------------

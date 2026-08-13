@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+const API_URL = import.meta.env.VITE_API_URL
 
 function Categories() {
   const [categories, setCategories] = useState([])
@@ -12,7 +13,7 @@ function Categories() {
 
   // Get all categories
   const fetchCategories = () => {
-    fetch('http://localhost:5213/api/Categories')
+    fetch(`${API_URL}/api/Categories`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch categories')
@@ -49,16 +50,13 @@ function Categories() {
     event.preventDefault()
 
     try {
-      const response = await fetch(
-        'http://localhost:5213/api/Categories',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(newCategory)
-        }
-      )
+      const response = await fetch(`${API_URL}/api/Categories`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(newCategory)
+})
 
       if (!response.ok) {
         throw new Error('Failed to add category')
@@ -90,20 +88,17 @@ function Categories() {
     event.preventDefault()
 
     try {
-      const response = await fetch(
-        `http://localhost:5213/api/Categories/${editingCategoryId}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            categoryId: editingCategoryId,
-            categoryName: newCategory.categoryName,
-            description: newCategory.description
-          })
-        }
-      )
+      const response = await fetch(`${API_URL}/api/Categories/${editingCategoryId}`, {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    categoryId: editingCategoryId,
+    categoryName: newCategory.categoryName,
+    description: newCategory.description
+  })
+})
 
       if (!response.ok) {
         throw new Error('Failed to update category')
@@ -129,12 +124,9 @@ function Categories() {
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:5213/api/Categories/${id}`,
-        {
-          method: 'DELETE'
-        }
-      )
+      const response = await fetch(`${API_URL}/api/Categories/${id}`, {
+  method: 'DELETE'
+})
 
       if (!response.ok) {
         throw new Error('Failed to delete category')

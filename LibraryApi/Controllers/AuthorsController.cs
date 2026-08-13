@@ -19,7 +19,7 @@ public class AuthorsController : ControllerBase
 
     // POST: api/Authors
     [HttpPost]
-    public IActionResult CreateAuthor(CreateAuthorDto dto)
+    public async Task<IActionResult> CreateAuthor(CreateAuthorDto dto)
     {
         var author = new Author
         {
@@ -28,7 +28,8 @@ public class AuthorsController : ControllerBase
         };
 
         _context.Authors.Add(author);
-        _context.SaveChanges();
+
+        await _context.SaveChangesAsync();
 
         return Ok(author);
     }
@@ -37,7 +38,14 @@ public class AuthorsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllAuthors()
     {
-        var authors = await _context.Authors.ToListAsync();
+        var authors = await _context.Authors
+            .Select(a => new AuthorDto
+            {
+                AuthorId = a.AuthorId,
+                Name = a.Name,
+                Email = a.Email
+            })
+            .ToListAsync();
 
         return Ok(authors);
     }
@@ -46,7 +54,15 @@ public class AuthorsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetAuthorById(int id)
     {
-        var author = await _context.Authors.FindAsync(id);
+        var author = await _context.Authors
+            .Where(a => a.AuthorId == id)
+            .Select(a => new AuthorDto
+            {
+                AuthorId = a.AuthorId,
+                Name = a.Name,
+                Email = a.Email
+            })
+            .FirstOrDefaultAsync();
 
         if (author == null)
         {
@@ -58,7 +74,9 @@ public class AuthorsController : ControllerBase
 
     // PUT: api/Authors/1
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateAuthor(int id, CreateAuthorDto dto)
+    public async Task<IActionResult> UpdateAuthor(
+        int id,
+        UpdateAuthorDto dto)
     {
         var author = await _context.Authors.FindAsync(id);
 

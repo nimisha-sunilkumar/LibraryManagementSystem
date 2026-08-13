@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+const API_URL = import.meta.env.VITE_API_URL
 
 function Books() {
   const [books, setBooks] = useState([])
@@ -34,7 +35,7 @@ function Books() {
 
   // Get all books
   const fetchBooks = () => {
-    fetch('http://localhost:5213/api/Books')
+    fetch(`${API_URL}/api/Books`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch books')
@@ -75,16 +76,13 @@ function Books() {
     }
 
     try {
-      const response = await fetch(
-        'http://localhost:5213/api/Books',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(newBook)
-        }
-      )
+      const response = await fetch(`${API_URL}/api/Books`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(newBook)
+})
 
       if (!response.ok) {
         throw new Error('Failed to add book')
@@ -119,16 +117,13 @@ function Books() {
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:5213/api/Books/${editingBookId}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(newBook)
-        }
-      )
+      const response = await fetch(`${API_URL}/api/Books/${editingBookId}`, {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(newBook)
+})
 
       if (!response.ok) {
         throw new Error('Failed to update book')
@@ -155,12 +150,9 @@ function Books() {
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:5213/api/Books/${id}`,
-        {
-          method: 'DELETE'
-        }
-      )
+      const response = await fetch(`${API_URL}/api/Books/${id}`, {
+  method: 'DELETE'
+})
 
       if (!response.ok) {
         throw new Error('Failed to delete book')
@@ -183,7 +175,7 @@ function Books() {
     }
 
     fetch(
-      `http://localhost:5213/api/Books/search?title=${encodeURIComponent(searchTitle)}`
+      `${API_URL}/api/Books/search?title=${encodeURIComponent(searchTitle)}`
     )
       .then(response => {
         if (!response.ok) {

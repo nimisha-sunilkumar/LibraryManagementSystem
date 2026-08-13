@@ -19,5 +19,5 @@ public class Borrow
 
     public DateTime? ReturnDate { get; set; }
 
-    public string Status { get; set; } = "Issued";
+    public string Status { get; set; } = "Borrowed";
 }

@@ -17,7 +17,10 @@ public class BorrowsController : ControllerBase
         _context = context;
     }
 
+    // =========================
     // POST: api/Borrows
+    // BORROW BOOK
+    // =========================
     [HttpPost]
     public async Task<IActionResult> BorrowBook(CreateBorrowDto dto)
     {
@@ -31,18 +34,34 @@ public class BorrowsController : ControllerBase
         if (member == null)
             return BadRequest("Member not found.");
 
+        if (!member.IsActive)
+            return BadRequest("Member is not active.");
+
         if (book.AvailableCopies <= 0)
             return BadRequest("Book is currently unavailable.");
+
+        if (dto.DueDate.Date < dto.BorrowDate.Date)
+            return BadRequest("Due date cannot be before borrow date.");
 
         var borrow = new Borrow
         {
             BookId = dto.BookId,
             MemberId = dto.MemberId,
-            BorrowDate = DateTime.SpecifyKind(dto.BorrowDate, DateTimeKind.Utc),
-            DueDate = DateTime.SpecifyKind(dto.DueDate, DateTimeKind.Utc),
-            Status = "Issued"
+
+            BorrowDate = DateTime.SpecifyKind(
+                dto.BorrowDate,
+                DateTimeKind.Utc
+            ),
+
+            DueDate = DateTime.SpecifyKind(
+                dto.DueDate,
+                DateTimeKind.Utc
+            ),
+
+            Status = "Borrowed"
         };
 
+        // Decrease available copies
         book.AvailableCopies--;
 
         _context.Borrows.Add(borrow);
@@ -61,14 +80,20 @@ public class BorrowsController : ControllerBase
         });
     }
 
+
+    // =========================
     // POST: api/Borrows/return
+    // RETURN BOOK
+    // =========================
     [HttpPost("return")]
     public async Task<IActionResult> ReturnBook(ReturnBookDto dto)
     {
         var borrow = await _context.Borrows
             .Include(b => b.Book)
             .Include(b => b.Member)
-            .FirstOrDefaultAsync(b => b.BorrowId == dto.BorrowId);
+            .FirstOrDefaultAsync(
+                b => b.BorrowId == dto.BorrowId
+            );
 
         if (borrow == null)
         {
@@ -77,13 +102,30 @@ public class BorrowsController : ControllerBase
 
         if (borrow.Status == "Returned")
         {
-            return BadRequest("This book has already been returned.");
+            return BadRequest(
+                "This book has already been returned."
+            );
         }
 
-        borrow.ReturnDate = DateTime.SpecifyKind(dto.ReturnDate, DateTimeKind.Utc);
+        if (borrow.Book == null)
+        {
+            return BadRequest("Book information not found.");
+        }
+
+        if (borrow.Member == null)
+        {
+            return BadRequest("Member information not found.");
+        }
+
+        borrow.ReturnDate = DateTime.SpecifyKind(
+            dto.ReturnDate,
+            DateTimeKind.Utc
+        );
+
         borrow.Status = "Returned";
 
-        borrow.Book!.AvailableCopies++;
+        // Increase available copies
+        borrow.Book.AvailableCopies++;
 
         await _context.SaveChangesAsync();
 
@@ -91,7 +133,7 @@ public class BorrowsController : ControllerBase
         {
             borrow.BorrowId,
             Book = borrow.Book.Title,
-            Member = borrow.Member!.FullName,
+            Member = borrow.Member.FullName,
             borrow.ReturnDate,
             borrow.Status,
             AvailableCopies = borrow.Book.AvailableCopies,
@@ -99,7 +141,11 @@ public class BorrowsController : ControllerBase
         });
     }
 
+
+    // =========================
     // GET: api/Borrows
+    // GET ALL BORROW RECORDS
+    // =========================
     [HttpGet]
     public async Task<IActionResult> GetAllBorrows()
     {
@@ -109,48 +155,62 @@ public class BorrowsController : ControllerBase
             .Select(b => new BorrowResponseDto
             {
                 BorrowId = b.BorrowId,
+
                 BookTitle = b.Book!.Title,
+
                 MemberName = b.Member!.FullName,
+
                 BorrowDate = b.BorrowDate,
+
                 DueDate = b.DueDate,
+
                 ReturnDate = b.ReturnDate,
-                Status = b.ReturnDate == null ? "Borrowed" : "Returned"
+
+                Status = b.ReturnDate == null
+                    ? "Borrowed"
+                    : "Returned"
             })
             .ToListAsync();
 
         return Ok(borrows);
     }
+
+
+    // =========================
     // GET: api/Borrows/overdue
-    [HttpGet("overdue")]
-    public async Task<IActionResult> GetOverdueBooks()
-    {
-        var today = DateTime.UtcNow;
+[HttpGet("overdue")]
+public async Task<IActionResult> GetOverdueBooks()
+{
+    var today = DateTime.UtcNow.Date;
 
-        var overdueBooks = await _context.Borrows
-            .Include(b => b.Book)
-            .Include(b => b.Member)
-            .Where(b =>
-                b.DueDate < today &&
-                b.ReturnDate == null)
-            .Select(b => new
-            {
-                b.BorrowId,
-                BookTitle = b.Book!.Title,
-                MemberName = b.Member!.FullName,
-                b.DueDate,
-                DaysLate = (today.Date - b.DueDate.Date).Days
-            })
-            .ToListAsync();
-
-        if (!overdueBooks.Any())
+    var overdueBooks = await _context.Borrows
+        .Include(b => b.Book)
+        .Include(b => b.Member)
+        .Where(b =>
+            b.DueDate.Date < today &&
+            b.ReturnDate == null)
+        .Select(b => new
         {
-            return NotFound("No overdue books found.");
-        }
+            b.BorrowId,
+            BookTitle = b.Book!.Title,
+            MemberName = b.Member!.FullName,
+            b.DueDate,
+            DaysLate = (today - b.DueDate.Date).Days
+        })
+        .ToListAsync();
 
-        return Ok(overdueBooks);
+    if (!overdueBooks.Any())
+    {
+        return NotFound("No overdue books found.");
     }
 
+    return Ok(overdueBooks);
+}
+
+    // =========================
     // GET: api/Borrows/search
+    // SEARCH BORROW RECORDS
+    // =========================
     [HttpGet("search")]
     public async Task<IActionResult> SearchBorrows(
         string? memberName,
@@ -165,38 +225,59 @@ public class BorrowsController : ControllerBase
         if (!string.IsNullOrWhiteSpace(memberName))
         {
             query = query.Where(b =>
-                b.Member!.FullName.ToLower().Contains(memberName.ToLower()));
+                b.Member!.FullName
+                    .ToLower()
+                    .Contains(memberName.ToLower())
+            );
         }
 
         if (!string.IsNullOrWhiteSpace(admissionNumber))
         {
             query = query.Where(b =>
-                b.Member!.AdmissionNumber.ToLower().Contains(admissionNumber.ToLower()));
+                b.Member!.AdmissionNumber
+                    .ToLower()
+                    .Contains(admissionNumber.ToLower())
+            );
         }
 
         if (!string.IsNullOrWhiteSpace(bookTitle))
         {
             query = query.Where(b =>
-                b.Book!.Title.ToLower().Contains(bookTitle.ToLower()));
+                b.Book!.Title
+                    .ToLower()
+                    .Contains(bookTitle.ToLower())
+            );
         }
 
         var results = await query
             .Select(b => new
             {
                 b.BorrowId,
+
                 BookTitle = b.Book!.Title,
+
                 MemberName = b.Member!.FullName,
-                AdmissionNumber = b.Member.AdmissionNumber,
+
+                AdmissionNumber =
+                    b.Member.AdmissionNumber,
+
                 b.BorrowDate,
+
                 b.DueDate,
+
                 b.ReturnDate,
-                Status = b.ReturnDate == null ? "Borrowed" : "Returned"
+
+                Status = b.ReturnDate == null
+                    ? "Borrowed"
+                    : "Returned"
             })
             .ToListAsync();
 
         if (!results.Any())
         {
-            return NotFound("No borrowing records found.");
+            return NotFound(
+                "No borrowing records found."
+            );
         }
 
         return Ok(results);

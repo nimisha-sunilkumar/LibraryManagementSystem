@@ -19,29 +19,33 @@ public class BooksController : ControllerBase
 
     // POST: api/Books
     [HttpPost]
-    public async Task<IActionResult> CreateBook(CreateBookDto dto)
+public async Task<IActionResult> CreateBook(CreateBookDto dto)
+{
+    var book = new Book
     {
-        var book = new Book
-        {
-            Title = dto.Title,
-            ISBN = dto.ISBN,
-            Description = dto.Description,
+        Title = dto.Title,
+        ISBN = dto.ISBN,
+        Description = dto.Description,
 
-            PublishedDate = DateTime.SpecifyKind(
-         dto.PublishedDate,
-         DateTimeKind.Utc),
+        PublishedDate = DateTime.SpecifyKind(
+            dto.PublishedDate,
+            DateTimeKind.Utc
+        ),
 
-            TotalCopies = dto.TotalCopies,
-            AvailableCopies = dto.AvailableCopies,
-            CategoryId = dto.CategoryId
-        };
+        TotalCopies = dto.TotalCopies,
 
-        _context.Books.Add(book);
-        await _context.SaveChangesAsync();
+        // Initially all copies are available
+        AvailableCopies = dto.TotalCopies,
 
-        return Ok(book);
-    }
+        CategoryId = dto.CategoryId
+    };
 
+    _context.Books.Add(book);
+
+    await _context.SaveChangesAsync();
+
+    return Ok(book);
+}
     // GET: api/Books
     [HttpGet]
     public async Task<IActionResult> GetAllBooks()
@@ -172,28 +176,48 @@ public class BooksController : ControllerBase
     }
 
     // PUT: api/Books/1
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateBook(int id, CreateBookDto dto)
+[HttpPut("{id}")]
+public async Task<IActionResult> UpdateBook(int id, UpdateBookDto dto)
+{
+    var book = await _context.Books.FindAsync(id);
+
+    if (book == null)
     {
-        var book = await _context.Books.FindAsync(id);
-
-        if (book == null)
-        {
-            return NotFound("Book not found");
-        }
-
-        book.Title = dto.Title;
-        book.ISBN = dto.ISBN;
-        book.Description = dto.Description;
-        book.PublishedDate = DateTime.SpecifyKind(dto.PublishedDate, DateTimeKind.Utc);
-        book.TotalCopies = dto.TotalCopies;
-        book.AvailableCopies = dto.AvailableCopies;
-        book.CategoryId = dto.CategoryId;
-
-        await _context.SaveChangesAsync();
-
-        return Ok(book);
+        return NotFound("Book not found");
     }
+
+    // Number of copies currently borrowed
+    int borrowedCopies = book.TotalCopies - book.AvailableCopies;
+
+    // New total cannot be less than the number already borrowed
+    if (dto.TotalCopies < borrowedCopies)
+    {
+        return BadRequest(
+            $"Cannot reduce total copies below {borrowedCopies}. " +
+            $"There are currently {borrowedCopies} copies borrowed."
+        );
+    }
+
+    book.Title = dto.Title;
+    book.ISBN = dto.ISBN;
+    book.Description = dto.Description;
+
+    book.PublishedDate = DateTime.SpecifyKind(
+        dto.PublishedDate,
+        DateTimeKind.Utc
+    );
+
+    book.TotalCopies = dto.TotalCopies;
+
+    // Recalculate available copies automatically
+    book.AvailableCopies = dto.TotalCopies - borrowedCopies;
+
+    book.CategoryId = dto.CategoryId;
+
+    await _context.SaveChangesAsync();
+
+    return Ok(book);
+}
 
     // DELETE: api/Books/1
     [HttpDelete("{id}")]

@@ -1,6 +1,16 @@
-﻿namespace LibraryApi.DTOs
+﻿namespace LibraryApi.DTOs;
+
+public class UpdateBookDto
 {
-    public class UpdateBookDto
-    {
-    }
+    public string Title { get; set; } = string.Empty;
+
+    public string ISBN { get; set; } = string.Empty;
+
+    public string Description { get; set; } = string.Empty;
+
+    public DateTime PublishedDate { get; set; }
+
+    public int TotalCopies { get; set; }
+
+    public int CategoryId { get; set; }
 }
