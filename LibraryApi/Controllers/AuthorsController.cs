@@ -56,11 +56,28 @@ public class AuthorsController : ControllerBase
     {
         var author = await _context.Authors
             .Where(a => a.AuthorId == id)
-            .Select(a => new AuthorDto
+            .Select(a => new
             {
                 AuthorId = a.AuthorId,
                 Name = a.Name,
-                Email = a.Email
+                Email = a.Email,
+
+                Books = a.BookAuthors
+                    .Select(ba => new
+                    {
+                        BookId = ba.Book.BookId,
+                        Title = ba.Book.Title,
+                        ISBN = ba.Book.ISBN,
+                        Description = ba.Book.Description,
+                        PublishedDate = DateOnly.FromDateTime(
+                            ba.Book.PublishedDate
+                        ),
+                        TotalCopies = ba.Book.TotalCopies,
+                        AvailableCopies = ba.Book.AvailableCopies,
+                        CategoryId = ba.Book.CategoryId,
+                        CategoryName = ba.Book.Category.CategoryName
+                    })
+                    .ToList()
             })
             .FirstOrDefaultAsync();
 

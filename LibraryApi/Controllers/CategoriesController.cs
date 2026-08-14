@@ -26,19 +26,44 @@ public class CategoriesController : ControllerBase
 
     // GET: api/Categories/1
     [HttpGet("{id}")]
-    public async Task<ActionResult<Category>> GetCategory(int id)
+    public async Task<IActionResult> GetCategory(int id)
     {
-        var category = await _context.Categories.FindAsync(id);
+        var category = await _context.Categories
+            .Where(c => c.CategoryId == id)
+            .Select(c => new
+            {
+                CategoryId = c.CategoryId,
+                CategoryName = c.CategoryName,
+                Description = c.Description,
+
+                Books = c.Books
+                    .Select(b => new
+                    {
+                        BookId = b.BookId,
+                        Title = b.Title,
+                        ISBN = b.ISBN,
+                        Description = b.Description,
+                        PublishedDate = b.PublishedDate,
+                        TotalCopies = b.TotalCopies,
+                        AvailableCopies = b.AvailableCopies,
+                        CategoryId = b.CategoryId
+                    })
+                    .ToList()
+            })
+            .FirstOrDefaultAsync();
 
         if (category == null)
-            return NotFound();
+        {
+            return NotFound("Category not found");
+        }
 
-        return category;
+        return Ok(category);
     }
 
     // POST: api/Categories
     [HttpPost]
-    public async Task<ActionResult<Category>> CreateCategory(CreateCategoryDto dto)
+    public async Task<ActionResult<Category>> CreateCategory(
+        CreateCategoryDto dto)
     {
         var category = new Category
         {
@@ -58,12 +83,17 @@ public class CategoriesController : ControllerBase
 
     // PUT: api/Categories/1
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateCategory(int id, Category category)
+    public async Task<IActionResult> UpdateCategory(
+        int id,
+        Category category)
     {
         if (id != category.CategoryId)
+        {
             return BadRequest();
+        }
 
-        _context.Entry(category).State = EntityState.Modified;
+        _context.Entry(category).State =
+            EntityState.Modified;
 
         await _context.SaveChangesAsync();
 
@@ -74,12 +104,16 @@ public class CategoriesController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteCategory(int id)
     {
-        var category = await _context.Categories.FindAsync(id);
+        var category =
+            await _context.Categories.FindAsync(id);
 
         if (category == null)
+        {
             return NotFound();
+        }
 
         _context.Categories.Remove(category);
+
         await _context.SaveChangesAsync();
 
         return NoContent();

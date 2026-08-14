@@ -19,55 +19,107 @@ public class BooksController : ControllerBase
 
     // POST: api/Books
     [HttpPost]
-public async Task<IActionResult> CreateBook(CreateBookDto dto)
-{
-    var book = new Book
+    public async Task<IActionResult> CreateBook(CreateBookDto dto)
     {
-        Title = dto.Title,
-        ISBN = dto.ISBN,
-        Description = dto.Description,
+        // Check that the author exists
+        var author = await _context.Authors
+            .FindAsync(dto.AuthorId);
 
-        PublishedDate = DateTime.SpecifyKind(
-            dto.PublishedDate,
-            DateTimeKind.Utc
-        ),
+        if (author == null)
+        {
+            return BadRequest("Author not found.");
+        }
 
-        TotalCopies = dto.TotalCopies,
+        // Check that the category exists
+        var category = await _context.Categories
+            .FindAsync(dto.CategoryId);
 
-        // Initially all copies are available
-        AvailableCopies = dto.TotalCopies,
+        if (category == null)
+        {
+            return BadRequest("Category not found.");
+        }
 
-        CategoryId = dto.CategoryId
-    };
+        var book = new Book
+        {
+            Title = dto.Title,
+            ISBN = dto.ISBN,
+            Description = dto.Description,
 
-    _context.Books.Add(book);
+            PublishedDate = DateTime.SpecifyKind(
+                dto.PublishedDate,
+                DateTimeKind.Utc
+            ),
 
-    await _context.SaveChangesAsync();
+            TotalCopies = dto.TotalCopies,
 
-    return Ok(book);
-}
+            // Initially all copies are available
+            AvailableCopies = dto.TotalCopies,
+
+            CategoryId = dto.CategoryId
+        };
+
+        _context.Books.Add(book);
+
+        await _context.SaveChangesAsync();
+
+        // Create Book ↔ Author relationship
+        var bookAuthor = new BookAuthor
+        {
+            BookId = book.BookId,
+            AuthorId = dto.AuthorId
+        };
+
+        _context.BookAuthors.Add(bookAuthor);
+
+        await _context.SaveChangesAsync();
+
+        // Return a simple object instead of the full EF entity.
+        // This prevents the JSON object cycle:
+        // Book -> Category -> Books -> Category -> ...
+        return Ok(new
+        {
+            book.BookId,
+            book.Title,
+            book.ISBN,
+            book.Description,
+            book.PublishedDate,
+            book.TotalCopies,
+            book.AvailableCopies,
+            book.CategoryId,
+            AuthorId = dto.AuthorId
+        });
+    }
+
+
     // GET: api/Books
     [HttpGet]
     public async Task<IActionResult> GetAllBooks()
     {
         var books = await _context.Books
-    .Include(b => b.Category)
-    .Select(b => new BookDto
-    {
-        BookId = b.BookId,
-        Title = b.Title,
-        ISBN = b.ISBN,
-        Description = b.Description,
-        PublishedDate = DateOnly.FromDateTime(b.PublishedDate),
-        TotalCopies = b.TotalCopies,
-        AvailableCopies = b.AvailableCopies,
-        CategoryId = b.CategoryId,
-        CategoryName = b.Category!.CategoryName
-    })
-    .ToListAsync();
+            .Include(b => b.Category)
+            .Include(b => b.BookAuthors)
+                .ThenInclude(ba => ba.Author)
+            .Select(b => new BookDto
+            {
+                BookId = b.BookId,
+                Title = b.Title,
+                ISBN = b.ISBN,
+                Description = b.Description,
+                PublishedDate = DateOnly.FromDateTime(b.PublishedDate),
+                TotalCopies = b.TotalCopies,
+                AvailableCopies = b.AvailableCopies,
+                CategoryId = b.CategoryId,
+                CategoryName = b.Category!.CategoryName,
+
+                AuthorName = b.BookAuthors
+                    .Select(ba => ba.Author.Name)
+                    .FirstOrDefault() ?? "Unknown"
+            })
+            .ToListAsync();
 
         return Ok(books);
     }
+
 
     // GET: api/Books/search?title=Clean
     [HttpGet("search")]
@@ -75,7 +127,9 @@ public async Task<IActionResult> CreateBook(CreateBookDto dto)
     {
         var books = await _context.Books
             .Include(b => b.Category)
-            .Where(b => b.Title.ToLower().Contains(title.ToLower()))
+            .Where(b =>
+                b.Title.ToLower().Contains(title.ToLower())
+            )
             .Select(b => new
             {
                 b.BookId,
@@ -89,20 +143,26 @@ public async Task<IActionResult> CreateBook(CreateBookDto dto)
         return Ok(books);
     }
 
+
     // GET: api/Books/category/Technology
     [HttpGet("category/{categoryName}")]
-    public async Task<IActionResult> SearchBooksByCategory(string categoryName)
+    public async Task<IActionResult> SearchBooksByCategory(
+        string categoryName)
     {
         var books = await _context.Books
             .Include(b => b.Category)
-            .Where(b => b.Category!.CategoryName.ToLower() == categoryName.ToLower())
+            .Where(b =>
+                b.Category!.CategoryName.ToLower()
+                    == categoryName.ToLower()
+            )
             .Select(b => new BookDto
             {
                 BookId = b.BookId,
                 Title = b.Title,
                 ISBN = b.ISBN,
                 Description = b.Description,
-                PublishedDate = DateOnly.FromDateTime(b.PublishedDate),
+                PublishedDate =
+                    DateOnly.FromDateTime(b.PublishedDate),
                 TotalCopies = b.TotalCopies,
                 AvailableCopies = b.AvailableCopies,
                 CategoryId = b.CategoryId,
@@ -111,48 +171,68 @@ public async Task<IActionResult> CreateBook(CreateBookDto dto)
             .ToListAsync();
 
         if (!books.Any())
-            return NotFound("No books found in this category.");
+        {
+            return NotFound(
+                "No books found in this category."
+            );
+        }
 
         return Ok(books);
     }
 
+
     // GET: api/Books/author/Robert C. Martin
     [HttpGet("author/{authorName}")]
-    public async Task<IActionResult> SearchBooksByAuthor(string authorName)
+    public async Task<IActionResult> SearchBooksByAuthor(
+        string authorName)
     {
         var books = await _context.BookAuthors
             .Include(ba => ba.Book)
                 .ThenInclude(b => b.Category)
             .Include(ba => ba.Author)
-            .Where(ba => ba.Author!.Name.ToLower().Contains(authorName.ToLower()))
+            .Where(ba =>
+                ba.Author!.Name.ToLower()
+                    .Contains(authorName.ToLower())
+            )
             .Select(ba => new BookDto
             {
                 BookId = ba.Book!.BookId,
                 Title = ba.Book.Title,
                 ISBN = ba.Book.ISBN,
                 Description = ba.Book.Description,
-                PublishedDate = DateOnly.FromDateTime(ba.Book.PublishedDate),
+                PublishedDate =
+                    DateOnly.FromDateTime(
+                        ba.Book.PublishedDate
+                    ),
                 TotalCopies = ba.Book.TotalCopies,
                 AvailableCopies = ba.Book.AvailableCopies,
                 CategoryId = ba.Book.CategoryId,
-                CategoryName = ba.Book.Category!.CategoryName
+                CategoryName =
+                    ba.Book.Category!.CategoryName
             })
             .Distinct()
             .ToListAsync();
 
         if (!books.Any())
-            return NotFound("No books found for this author.");
+        {
+            return NotFound(
+                "No books found for this author."
+            );
+        }
 
         return Ok(books);
     }
+
 
     // GET: api/Books/1
     [HttpGet("{id}")]
     public async Task<IActionResult> GetBookById(int id)
     {
         var book = await _context.Books
-    .Include(b => b.Category)
-    .FirstOrDefaultAsync(b => b.BookId == id);
+            .Include(b => b.Category)
+            .FirstOrDefaultAsync(
+                b => b.BookId == id
+            );
 
         if (book == null)
         {
@@ -165,59 +245,72 @@ public async Task<IActionResult> CreateBook(CreateBookDto dto)
             Title = book.Title,
             ISBN = book.ISBN,
             Description = book.Description,
-            PublishedDate = DateOnly.FromDateTime(book.PublishedDate),
+            PublishedDate =
+                DateOnly.FromDateTime(
+                    book.PublishedDate
+                ),
             TotalCopies = book.TotalCopies,
             AvailableCopies = book.AvailableCopies,
             CategoryId = book.CategoryId,
-            CategoryName = book.Category!.CategoryName
+            CategoryName =
+                book.Category!.CategoryName
         };
 
         return Ok(result);
     }
 
+
     // PUT: api/Books/1
-[HttpPut("{id}")]
-public async Task<IActionResult> UpdateBook(int id, UpdateBookDto dto)
-{
-    var book = await _context.Books.FindAsync(id);
-
-    if (book == null)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateBook(
+        int id,
+        UpdateBookDto dto)
     {
-        return NotFound("Book not found");
-    }
+        var book = await _context.Books.FindAsync(id);
 
-    // Number of copies currently borrowed
-    int borrowedCopies = book.TotalCopies - book.AvailableCopies;
+        if (book == null)
+        {
+            return NotFound("Book not found");
+        }
 
-    // New total cannot be less than the number already borrowed
-    if (dto.TotalCopies < borrowedCopies)
-    {
-        return BadRequest(
-            $"Cannot reduce total copies below {borrowedCopies}. " +
-            $"There are currently {borrowedCopies} copies borrowed."
+        // Number of copies currently borrowed
+        int borrowedCopies =
+            book.TotalCopies - book.AvailableCopies;
+
+        // New total cannot be less than the number
+        // already borrowed
+        if (dto.TotalCopies < borrowedCopies)
+        {
+            return BadRequest(
+                $"Cannot reduce total copies below " +
+                $"{borrowedCopies}. " +
+                $"There are currently " +
+                $"{borrowedCopies} copies borrowed."
+            );
+        }
+
+        book.Title = dto.Title;
+        book.ISBN = dto.ISBN;
+        book.Description = dto.Description;
+
+        book.PublishedDate = DateTime.SpecifyKind(
+            dto.PublishedDate,
+            DateTimeKind.Utc
         );
+
+        book.TotalCopies = dto.TotalCopies;
+
+        // Recalculate available copies automatically
+        book.AvailableCopies =
+            dto.TotalCopies - borrowedCopies;
+
+        book.CategoryId = dto.CategoryId;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(book);
     }
 
-    book.Title = dto.Title;
-    book.ISBN = dto.ISBN;
-    book.Description = dto.Description;
-
-    book.PublishedDate = DateTime.SpecifyKind(
-        dto.PublishedDate,
-        DateTimeKind.Utc
-    );
-
-    book.TotalCopies = dto.TotalCopies;
-
-    // Recalculate available copies automatically
-    book.AvailableCopies = dto.TotalCopies - borrowedCopies;
-
-    book.CategoryId = dto.CategoryId;
-
-    await _context.SaveChangesAsync();
-
-    return Ok(book);
-}
 
     // DELETE: api/Books/1
     [HttpDelete("{id}")]
