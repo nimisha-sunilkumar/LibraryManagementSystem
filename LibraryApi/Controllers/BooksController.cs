@@ -17,11 +17,13 @@ public class BooksController : ControllerBase
         _context = context;
     }
 
+    // ============================================================
     // POST: api/Books
+    // ============================================================
     [HttpPost]
     public async Task<IActionResult> CreateBook(CreateBookDto dto)
     {
-        // Check that the author exists
+        // Check author
         var author = await _context.Authors
             .FindAsync(dto.AuthorId);
 
@@ -30,13 +32,19 @@ public class BooksController : ControllerBase
             return BadRequest("Author not found.");
         }
 
-        // Check that the category exists
+        // Check category
         var category = await _context.Categories
             .FindAsync(dto.CategoryId);
 
         if (category == null)
         {
             return BadRequest("Category not found.");
+        }
+
+        // Validate total copies
+        if (dto.TotalCopies < 0)
+        {
+            return BadRequest("Total copies cannot be negative.");
         }
 
         var book = new Book
@@ -73,9 +81,8 @@ public class BooksController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        // Return a simple object instead of the full EF entity.
-        // This prevents the JSON object cycle:
-        // Book -> Category -> Books -> Category -> ...
+        // Return DTO-like object instead of EF entity
+        // to avoid circular JSON references.
         return Ok(new
         {
             book.BookId,
@@ -91,7 +98,9 @@ public class BooksController : ControllerBase
     }
 
 
+    // ============================================================
     // GET: api/Books
+    // ============================================================
     [HttpGet]
     public async Task<IActionResult> GetAllBooks()
     {
@@ -105,10 +114,15 @@ public class BooksController : ControllerBase
                 Title = b.Title,
                 ISBN = b.ISBN,
                 Description = b.Description,
-                PublishedDate = DateOnly.FromDateTime(b.PublishedDate),
+
+                PublishedDate = DateOnly.FromDateTime(
+                    b.PublishedDate
+                ),
+
                 TotalCopies = b.TotalCopies,
                 AvailableCopies = b.AvailableCopies,
                 CategoryId = b.CategoryId,
+
                 CategoryName = b.Category!.CategoryName,
 
                 AuthorName = b.BookAuthors
@@ -121,7 +135,9 @@ public class BooksController : ControllerBase
     }
 
 
+    // ============================================================
     // GET: api/Books/search?title=Clean
+    // ============================================================
     [HttpGet("search")]
     public async Task<IActionResult> SearchBooks(string title)
     {
@@ -144,7 +160,9 @@ public class BooksController : ControllerBase
     }
 
 
-    // GET: api/Books/category/Technology
+    // ============================================================
+    // GET: api/Books/category/{categoryName}
+    // ============================================================
     [HttpGet("category/{categoryName}")]
     public async Task<IActionResult> SearchBooksByCategory(
         string categoryName)
@@ -161,8 +179,11 @@ public class BooksController : ControllerBase
                 Title = b.Title,
                 ISBN = b.ISBN,
                 Description = b.Description,
-                PublishedDate =
-                    DateOnly.FromDateTime(b.PublishedDate),
+
+                PublishedDate = DateOnly.FromDateTime(
+                    b.PublishedDate
+                ),
+
                 TotalCopies = b.TotalCopies,
                 AvailableCopies = b.AvailableCopies,
                 CategoryId = b.CategoryId,
@@ -181,7 +202,9 @@ public class BooksController : ControllerBase
     }
 
 
-    // GET: api/Books/author/Robert C. Martin
+    // ============================================================
+    // GET: api/Books/author/{authorName}
+    // ============================================================
     [HttpGet("author/{authorName}")]
     public async Task<IActionResult> SearchBooksByAuthor(
         string authorName)
@@ -200,15 +223,15 @@ public class BooksController : ControllerBase
                 Title = ba.Book.Title,
                 ISBN = ba.Book.ISBN,
                 Description = ba.Book.Description,
-                PublishedDate =
-                    DateOnly.FromDateTime(
-                        ba.Book.PublishedDate
-                    ),
+
+                PublishedDate = DateOnly.FromDateTime(
+                    ba.Book.PublishedDate
+                ),
+
                 TotalCopies = ba.Book.TotalCopies,
                 AvailableCopies = ba.Book.AvailableCopies,
                 CategoryId = ba.Book.CategoryId,
-                CategoryName =
-                    ba.Book.Category!.CategoryName
+                CategoryName = ba.Book.Category!.CategoryName
             })
             .Distinct()
             .ToListAsync();
@@ -224,12 +247,16 @@ public class BooksController : ControllerBase
     }
 
 
-    // GET: api/Books/1
+    // ============================================================
+    // GET: api/Books/{id}
+    // ============================================================
     [HttpGet("{id}")]
     public async Task<IActionResult> GetBookById(int id)
     {
         var book = await _context.Books
             .Include(b => b.Category)
+            .Include(b => b.BookAuthors)
+                .ThenInclude(ba => ba.Author)
             .FirstOrDefaultAsync(
                 b => b.BookId == id
             );
@@ -239,46 +266,100 @@ public class BooksController : ControllerBase
             return NotFound("Book not found");
         }
 
+        var authorName = book.BookAuthors
+            .Select(ba => ba.Author.Name)
+            .FirstOrDefault() ?? "Unknown";
+
         var result = new BookDto
         {
             BookId = book.BookId,
             Title = book.Title,
             ISBN = book.ISBN,
             Description = book.Description,
-            PublishedDate =
-                DateOnly.FromDateTime(
-                    book.PublishedDate
-                ),
+
+            PublishedDate = DateOnly.FromDateTime(
+                book.PublishedDate
+            ),
+
             TotalCopies = book.TotalCopies,
             AvailableCopies = book.AvailableCopies,
             CategoryId = book.CategoryId,
-            CategoryName =
-                book.Category!.CategoryName
+            CategoryName = book.Category!.CategoryName,
+            AuthorName = authorName
         };
 
         return Ok(result);
     }
 
 
-    // PUT: api/Books/1
+    // ============================================================
+    // PUT: api/Books/{id}
+    // ============================================================
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateBook(
         int id,
         UpdateBookDto dto)
     {
-        var book = await _context.Books.FindAsync(id);
+        // --------------------------------------------------------
+        // Find book
+        // --------------------------------------------------------
+        var book = await _context.Books
+            .FirstOrDefaultAsync(b => b.BookId == id);
 
         if (book == null)
         {
-            return NotFound("Book not found");
+            return NotFound("Book not found.");
         }
 
-        // Number of copies currently borrowed
+
+        // --------------------------------------------------------
+        // Check author
+        // --------------------------------------------------------
+        var author = await _context.Authors
+            .FindAsync(dto.AuthorId);
+
+        if (author == null)
+        {
+            return BadRequest("Author not found.");
+        }
+
+
+        // --------------------------------------------------------
+        // Check category
+        // --------------------------------------------------------
+        var category = await _context.Categories
+            .FindAsync(dto.CategoryId);
+
+        if (category == null)
+        {
+            return BadRequest("Category not found.");
+        }
+
+
+        // --------------------------------------------------------
+        // Validate total copies
+        // --------------------------------------------------------
+        if (dto.TotalCopies < 0)
+        {
+            return BadRequest(
+                "Total copies cannot be negative."
+            );
+        }
+
+
+        // --------------------------------------------------------
+        // Calculate currently borrowed copies
+        //
+        // borrowed = total - available
+        // --------------------------------------------------------
         int borrowedCopies =
             book.TotalCopies - book.AvailableCopies;
 
-        // New total cannot be less than the number
-        // already borrowed
+
+        // --------------------------------------------------------
+        // Do not allow total copies to become less than
+        // currently borrowed copies
+        // --------------------------------------------------------
         if (dto.TotalCopies < borrowedCopies)
         {
             return BadRequest(
@@ -289,6 +370,10 @@ public class BooksController : ControllerBase
             );
         }
 
+
+        // --------------------------------------------------------
+        // Update normal book properties
+        // --------------------------------------------------------
         book.Title = dto.Title;
         book.ISBN = dto.ISBN;
         book.Description = dto.Description;
@@ -300,33 +385,142 @@ public class BooksController : ControllerBase
 
         book.TotalCopies = dto.TotalCopies;
 
-        // Recalculate available copies automatically
+        // Keep borrowed copies unchanged
+        // and calculate new available copies.
         book.AvailableCopies =
             dto.TotalCopies - borrowedCopies;
 
         book.CategoryId = dto.CategoryId;
 
+
+        // --------------------------------------------------------
+        // Find existing BookAuthor relationship
+        // --------------------------------------------------------
+        var existingBookAuthor = await _context.BookAuthors
+            .FirstOrDefaultAsync(
+                ba => ba.BookId == id
+            );
+
+
+        // --------------------------------------------------------
+        // If there is an existing relationship and the author
+        // is changing, delete the old relationship first.
+        // --------------------------------------------------------
+        if (existingBookAuthor != null)
+        {
+            if (existingBookAuthor.AuthorId != dto.AuthorId)
+            {
+                _context.BookAuthors.Remove(
+                    existingBookAuthor
+                );
+
+                // IMPORTANT:
+                // Save deletion before inserting the new
+                // BookAuthor because BookAuthor has a
+                // composite primary key.
+                await _context.SaveChangesAsync();
+
+                var newBookAuthor = new BookAuthor
+                {
+                    BookId = id,
+                    AuthorId = dto.AuthorId
+                };
+
+                _context.BookAuthors.Add(newBookAuthor);
+            }
+        }
+        else
+        {
+            // No relationship exists, so create one.
+            var newBookAuthor = new BookAuthor
+            {
+                BookId = id,
+                AuthorId = dto.AuthorId
+            };
+
+            _context.BookAuthors.Add(newBookAuthor);
+        }
+
+
+        // --------------------------------------------------------
+        // Save book changes + new relationship
+        // --------------------------------------------------------
         await _context.SaveChangesAsync();
 
-        return Ok(book);
+
+        // --------------------------------------------------------
+        // Return a safe response object.
+        //
+        // Do NOT return the EF Book entity directly because
+        // Book -> BookAuthors -> Book -> BookAuthors can create
+        // a JSON object cycle.
+        // --------------------------------------------------------
+        return Ok(new
+        {
+            book.BookId,
+            book.Title,
+            book.ISBN,
+            book.Description,
+            book.PublishedDate,
+            book.TotalCopies,
+            book.AvailableCopies,
+            book.CategoryId,
+            AuthorId = dto.AuthorId
+        });
     }
 
 
-    // DELETE: api/Books/1
+    // ============================================================
+    // DELETE: api/Books/{id}
+    // ============================================================
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteBook(int id)
     {
-        var book = await _context.Books.FindAsync(id);
+        // --------------------------------------------------------
+        // Find book
+        // --------------------------------------------------------
+        var book = await _context.Books
+            .FirstOrDefaultAsync(b => b.BookId == id);
 
         if (book == null)
         {
-            return NotFound("Book not found");
+            return NotFound("Book not found.");
         }
 
+
+        // --------------------------------------------------------
+        // Find BookAuthor relationships
+        // --------------------------------------------------------
+        var bookAuthors = await _context.BookAuthors
+            .Where(ba => ba.BookId == id)
+            .ToListAsync();
+
+
+        // --------------------------------------------------------
+        // Remove relationships first
+        // --------------------------------------------------------
+        if (bookAuthors.Any())
+        {
+            _context.BookAuthors.RemoveRange(
+                bookAuthors
+            );
+
+            await _context.SaveChangesAsync();
+        }
+
+
+        // --------------------------------------------------------
+        // Remove the book
+        // --------------------------------------------------------
         _context.Books.Remove(book);
 
         await _context.SaveChangesAsync();
 
-        return Ok("Book deleted successfully");
+
+        return Ok(new
+        {
+            message = "Book deleted successfully.",
+            bookId = id
+        });
     }
 }

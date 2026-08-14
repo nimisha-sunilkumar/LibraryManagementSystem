@@ -238,7 +238,8 @@ function Books() {
             description: newBook.description,
             publishedDate: newBook.publishedDate,
             totalCopies: newBook.totalCopies,
-            categoryId: newBook.categoryId
+            categoryId: newBook.categoryId,
+            authorId: newBook.authorId
           })
         }
       )
