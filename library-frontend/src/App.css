@@ -1,5 +1,13 @@
+/* ============================================================
+   GLOBAL
+============================================================ */
+
 * {
   box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -9,103 +17,464 @@ body {
   color: #111827;
 }
 
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af;
+}
+
 .app {
   min-height: 100vh;
 }
 
-/* =========================
+
+/* ============================================================
    NAVBAR
-========================= */
+============================================================ */
 
 .navbar {
-  height: 65px;
+  height: 72px;
+  width: 100%;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 28px;
-  background: linear-gradient(135deg, #172554, #1e3a8a);
-  color: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+
+  padding: 0 30px;
+
+  background: #ffffff;
+  color: #172554;
+
+  border-bottom: 1px solid #e5e7eb;
+
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+
+  position: relative;
+  z-index: 100;
 }
 
-.navbar h2 {
-  margin: 0;
-  font-size: 22px;
-  letter-spacing: 0.3px;
-}
 
-.admin {
-  font-weight: bold;
-  background-color: rgba(255, 255, 255, 0.12);
-  padding: 8px 14px;
-  border-radius: 20px;
-}
+/* ============================================================
+   NAVBAR BRAND
+============================================================ */
 
-/* =========================
-   LAYOUT
-========================= */
-
-.layout {
+.navbar-brand {
   display: flex;
-  min-height: calc(100vh - 65px);
+  align-items: center;
+  gap: 12px;
 }
 
-/* =========================
-   SIDEBAR
-========================= */
+.navbar-logo {
+  width: 42px;
+  height: 42px;
 
-.sidebar {
-  width: 230px;
-  padding: 28px 16px;
-  background: linear-gradient(180deg, #111827, #172033);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #eff6ff;
+
+  border-radius: 10px;
+
+  font-size: 22px;
+}
+
+.navbar-brand h2 {
+  margin: 0;
+
+  font-size: 19px;
+  font-weight: 700;
+
+  color: #172554;
+}
+
+.navbar-brand span {
+  display: block;
+
+  margin-top: 2px;
+
+  font-size: 12px;
+
+  color: #64748b;
+}
+
+
+/* ============================================================
+   NAVBAR USER
+============================================================ */
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #1d4ed8
+  );
+
   color: white;
-  flex-shrink: 0;
+
+  font-weight: 700;
+  font-size: 16px;
 }
 
-.sidebar h2,
-.sidebar h3 {
-  margin-top: 0;
+.user-details {
+  display: flex;
+  flex-direction: column;
+
+  line-height: 1.3;
 }
 
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-  margin-top: 25px;
+.user-details strong {
+  font-size: 14px;
+  color: #1e293b;
 }
 
-.sidebar li {
-  padding: 13px 15px;
-  margin-bottom: 7px;
-  cursor: pointer;
+.user-details span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+
+/* ============================================================
+   LOGOUT
+============================================================ */
+
+.logout-button {
+  border: 1px solid #e2e8f0;
+
+  background: white;
+
+  color: #475569;
+
+  padding: 9px 15px;
+
   border-radius: 8px;
-  color: #d1d5db;
+
+  cursor: pointer;
+
+  font-family: inherit;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
   transition: all 0.2s ease;
 }
 
-.sidebar li:hover {
-  background-color: #374151;
-  color: white;
-  transform: translateX(3px);
+.logout-button:hover {
+  background: #fef2f2;
+
+  border-color: #fecaca;
+
+  color: #dc2626;
 }
 
-/* =========================
+.logout-button span {
+  font-size: 17px;
+}
+
+
+/* ============================================================
+   MAIN LAYOUT
+============================================================ */
+
+.layout {
+  display: flex;
+
+  min-height: calc(100vh - 72px);
+
+  background: #f5f7fb;
+}
+
+
+/* ============================================================
+   SIDEBAR
+============================================================ */
+
+.sidebar {
+  width: 245px;
+
+  min-height: calc(100vh - 72px);
+
+  padding: 25px 15px;
+
+  background: linear-gradient(
+    180deg,
+    #0f172a 0%,
+    #172554 100%
+  );
+
+  color: white;
+
+  flex-shrink: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* ============================================================
+   SIDEBAR HEADER
+============================================================ */
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 5px 8px 25px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-icon {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255, 255, 255, 0.1);
+
+  border-radius: 10px;
+
+  font-size: 20px;
+
+  flex-shrink: 0;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+
+  font-size: 16px;
+
+  color: white;
+}
+
+.sidebar-header p {
+  margin: 3px 0 0;
+
+  font-size: 11px;
+
+  color: #94a3b8;
+}
+
+
+/* ============================================================
+   SIDEBAR SECTION TITLE
+============================================================ */
+
+.sidebar-section-title {
+  margin: 25px 10px 10px;
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  letter-spacing: 1.2px;
+
+  color: #64748b;
+}
+
+
+/* ============================================================
+   SIDEBAR MENU
+============================================================ */
+
+.sidebar-menu {
+  list-style: none;
+
+  padding: 0;
+
+  margin: 0;
+}
+
+.sidebar-menu li {
+  margin-bottom: 5px;
+}
+
+.sidebar-menu li a {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  width: 100%;
+
+  padding: 12px 13px;
+
+  border-radius: 8px;
+
+  color: #cbd5e1;
+
+  text-decoration: none;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  transition: all 0.2s ease;
+}
+
+.sidebar-menu li a:hover {
+  background: rgba(255, 255, 255, 0.08);
+
+  color: white;
+
+  transform: translateX(2px);
+}
+
+
+/* ============================================================
+   ACTIVE MENU ITEM
+============================================================ */
+
+.sidebar-menu li a.active {
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #1d4ed8
+  );
+
+  color: white;
+
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.sidebar-menu li a.active .menu-icon {
+  color: white;
+}
+
+
+/* ============================================================
+   MENU ICON
+============================================================ */
+
+.menu-icon {
+  width: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 16px;
+
+  color: #94a3b8;
+
+  flex-shrink: 0;
+}
+
+
+/* ============================================================
+   SIDEBAR FOOTER
+============================================================ */
+
+.sidebar-footer {
+  margin-top: auto;
+
+  padding: 14px 10px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-footer-icon {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  border-radius: 8px;
+
+  font-size: 16px;
+
+  flex-shrink: 0;
+}
+
+.sidebar-footer div:last-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-footer strong {
+  font-size: 12px;
+
+  color: #e2e8f0;
+}
+
+.sidebar-footer span {
+  margin-top: 2px;
+
+  font-size: 10px;
+
+  color: #64748b;
+}
+
+
+/* ============================================================
    MAIN CONTENT
-========================= */
+============================================================ */
 
 .content {
   flex: 1;
-  padding: 30px;
+
+  padding: 32px;
+
   min-width: 0;
+
+  overflow-x: hidden;
 }
 
-/* =========================
+
+/* ============================================================
    GENERAL HEADINGS
-========================= */
+============================================================ */
 
 .content h1 {
   margin-top: 0;
+
   margin-bottom: 25px;
+
   font-size: 30px;
+
   color: #172554;
 }
 
@@ -113,13 +482,16 @@ body {
   color: #1e293b;
 }
 
-/* =========================
+
+/* ============================================================
    DASHBOARD
-========================= */
+============================================================ */
 
 .dashboard {
   flex: 1;
+
   padding: 0;
+
   background-color: transparent;
 }
 
@@ -129,39 +501,55 @@ body {
 
 .cards {
   display: grid;
+
   grid-template-columns: repeat(3, 1fr);
+
   gap: 20px;
 }
 
 .card {
   background-color: white;
+
   padding: 25px;
+
   border-radius: 12px;
+
   border: 1px solid #e5e7eb;
+
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+
+  box-shadow:
+    0 8px 20px rgba(15, 23, 42, 0.1);
 }
 
 .card h3 {
   margin-top: 0;
+
   color: #475569;
 }
 
 .card p {
   font-size: 30px;
+
   font-weight: bold;
+
   margin-bottom: 0;
+
   color: #1d4ed8;
 }
 
-/* =========================
+
+/* ============================================================
    PAGE HEADER
-========================= */
+============================================================ */
 
 .books-page {
   width: 100%;
@@ -169,24 +557,30 @@ body {
 
 .page-header {
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
   margin-bottom: 25px;
 }
 
 .page-header h1 {
   margin: 0 0 5px 0;
+
   font-size: 32px;
 }
 
 .page-header p {
   margin: 0;
+
   color: #6b7280;
 }
 
-/* =========================
+
+/* ============================================================
    BUTTONS
-========================= */
+============================================================ */
 
 button {
   font-family: inherit;
@@ -194,62 +588,92 @@ button {
 
 .primary-button {
   border: none;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #1d4ed8
+  );
+
   color: white;
+
   padding: 10px 18px;
+
   border-radius: 7px;
+
   cursor: pointer;
+
   font-weight: bold;
+
   transition: all 0.2s ease;
 }
 
 .primary-button:hover {
   background: #1e40af;
+
   transform: translateY(-1px);
 }
 
 .secondary-button {
   border: 1px solid #d1d5db;
+
   background-color: white;
+
   color: #374151;
+
   padding: 10px 18px;
+
   border-radius: 7px;
+
   cursor: pointer;
+
   font-weight: bold;
+
+  transition: 0.2s ease;
 }
 
 .secondary-button:hover {
   background-color: #f3f4f6;
 }
 
-/* =========================
+
+/* ============================================================
    ADD / EDIT FORMS
-========================= */
+============================================================ */
 
 .book-form,
 .borrow-form {
   background-color: white;
+
   padding: 25px;
+
   border-radius: 12px;
+
   margin-bottom: 25px;
+
   border: 1px solid #e5e7eb;
+
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
 }
 
 .book-form h2,
 .borrow-form h2 {
   margin-top: 0;
+
   margin-bottom: 20px;
 }
 
 .form-grid {
   display: grid;
+
   grid-template-columns: repeat(2, 1fr);
+
   gap: 18px;
 }
 
 .form-group {
   display: flex;
+
   flex-direction: column;
 }
 
@@ -259,7 +683,9 @@ button {
 
 .form-group label {
   margin-bottom: 7px;
+
   font-weight: bold;
+
   color: #374151;
 }
 
@@ -267,12 +693,25 @@ button {
 .form-group textarea,
 .form-group select {
   width: 100%;
+
   padding: 11px;
+
   border: 1px solid #d1d5db;
+
   border-radius: 7px;
+
   font-family: inherit;
+
   font-size: 14px;
+
   background-color: white;
+
+  transition: 0.2s ease;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
 }
 
 .form-group input:focus,
@@ -282,69 +721,104 @@ button {
 .borrow-form input:focus,
 .borrow-form select:focus {
   outline: none;
+
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .form-actions {
   display: flex;
+
   gap: 10px;
+
   margin-top: 20px;
 }
 
-/* =========================
+
+/* ============================================================
    SEARCH
-========================= */
+============================================================ */
 
 .search-section {
   display: flex;
+
   gap: 10px;
+
   margin-bottom: 20px;
+
   background-color: white;
+
   padding: 15px;
+
   border-radius: 10px;
+
   border: 1px solid #e5e7eb;
+
   box-shadow: 0 3px 10px rgba(15, 23, 42, 0.05);
 }
 
 .search-section input {
   flex: 1;
+
   max-width: 400px;
+
   padding: 11px;
+
   border: 1px solid #d1d5db;
+
   border-radius: 7px;
+
   font-size: 14px;
 }
 
-/* =========================
+
+/* ============================================================
    BOOKS TABLE
-========================= */
+============================================================ */
 
 .books-table-container {
   background-color: white;
+
   border-radius: 12px;
+
   overflow-x: auto;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+
+  box-shadow:
+    0 4px 12px rgba(15, 23, 42, 0.06);
 }
 
 .books-table {
   width: 100%;
+
   border-collapse: collapse;
+
   min-width: 850px;
 }
 
 .books-table th {
   background-color: #172554;
+
   color: white;
+
   padding: 14px;
+
   text-align: left;
+
   font-size: 14px;
 }
 
 .books-table td {
   padding: 14px;
+
   border-bottom: 1px solid #e5e7eb;
+
   font-size: 14px;
+}
+
+.books-table tbody tr {
+  transition: background-color 0.2s ease;
 }
 
 .books-table tbody tr:hover {
@@ -357,88 +831,121 @@ button {
 
 .book-title {
   font-weight: bold;
+
   color: #111827;
 }
 
-/* =========================
+
+/* ============================================================
    BOOK CARDS
-========================= */
+============================================================ */
 
 .books-list {
   display: grid;
+
   grid-template-columns: repeat(2, 1fr);
+
   gap: 20px;
 }
 
 .book-card {
   background-color: white;
+
   padding: 22px;
+
   border-radius: 12px;
+
   border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+
+  box-shadow:
+    0 4px 12px rgba(15, 23, 42, 0.06);
+
   transition: all 0.2s ease;
 }
 
 .book-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1);
+
+  box-shadow:
+    0 8px 18px rgba(15, 23, 42, 0.1);
 }
 
 .book-card h3 {
   margin-top: 0;
+
   margin-bottom: 15px;
+
   color: #1e3a8a;
 }
 
 .book-card p {
   color: #4b5563;
+
   margin: 8px 0;
 }
 
-/* =========================
+
+/* ============================================================
    COPY STATUS
-========================= */
+============================================================ */
 
 .stock {
   display: inline-block;
+
   min-width: 35px;
+
   text-align: center;
+
   padding: 5px 9px;
+
   border-radius: 15px;
+
   font-weight: bold;
 }
 
 .stock.available {
   background-color: #dcfce7;
+
   color: #166534;
 }
 
 .stock.unavailable {
   background-color: #fee2e2;
+
   color: #991b1b;
 }
 
-/* =========================
+
+/* ============================================================
    ACTION BUTTONS
-========================= */
+============================================================ */
 
 .action-buttons {
   display: flex;
+
   gap: 8px;
+
+  flex-wrap: wrap;
 }
 
 .edit-button,
 .delete-button {
   border: none;
+
   padding: 7px 12px;
+
   border-radius: 6px;
+
   cursor: pointer;
+
   font-weight: bold;
+
   transition: 0.2s ease;
 }
 
 .edit-button {
   background-color: #dbeafe;
+
   color: #1d4ed8;
 }
 
@@ -448,6 +955,7 @@ button {
 
 .delete-button {
   background-color: #fee2e2;
+
   color: #b91c1c;
 }
 
@@ -455,26 +963,44 @@ button {
   background-color: #fecaca;
 }
 
-/* =========================
+
+/* ============================================================
    AUTHORS
-========================= */
+============================================================ */
 
 .authors-list {
   display: grid;
+
   grid-template-columns: repeat(2, 1fr);
+
   gap: 20px;
 }
 
 .author-card {
   background-color: white;
+
   padding: 22px;
+
   border-radius: 12px;
+
   border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+
+  box-shadow:
+    0 4px 12px rgba(15, 23, 42, 0.06);
+
+  transition: all 0.2s ease;
+}
+
+.author-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 8px 18px rgba(15, 23, 42, 0.1);
 }
 
 .author-card h3 {
   margin-top: 0;
+
   color: #1e3a8a;
 }
 
@@ -482,26 +1008,44 @@ button {
   color: #6b7280;
 }
 
-/* =========================
+
+/* ============================================================
    CATEGORIES
-========================= */
+============================================================ */
 
 .categories-list {
   display: grid;
+
   grid-template-columns: repeat(3, 1fr);
+
   gap: 20px;
 }
 
 .category-card {
   background-color: white;
+
   padding: 22px;
+
   border-radius: 12px;
+
   border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+
+  box-shadow:
+    0 4px 12px rgba(15, 23, 42, 0.06);
+
+  transition: all 0.2s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 8px 18px rgba(15, 23, 42, 0.1);
 }
 
 .category-card h3 {
   margin-top: 0;
+
   color: #1e3a8a;
 }
 
@@ -509,76 +1053,117 @@ button {
   color: #6b7280;
 }
 
-/* =========================
+
+/* ============================================================
    MEMBERS
-========================= */
+============================================================ */
 
 .members-list {
   display: grid;
+
   grid-template-columns: repeat(2, 1fr);
+
   gap: 20px;
 }
 
 .member-card {
   background-color: white;
+
   padding: 22px;
+
   border-radius: 12px;
+
   border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+
+  box-shadow:
+    0 4px 12px rgba(15, 23, 42, 0.06);
+
+  transition: all 0.2s ease;
+}
+
+.member-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 8px 18px rgba(15, 23, 42, 0.1);
 }
 
 .member-card h3 {
   margin-top: 0;
+
   color: #1e3a8a;
 }
 
 .member-card p {
   color: #4b5563;
+
   margin: 7px 0;
 }
 
-/* =========================
+
+/* ============================================================
    BORROW & RETURN
-========================= */
+============================================================ */
 
 .borrow-form select,
 .borrow-form input {
   display: block;
+
   width: 100%;
+
   max-width: 500px;
+
   padding: 11px;
+
   margin-top: 7px;
+
   margin-bottom: 12px;
+
   border: 1px solid #d1d5db;
+
   border-radius: 7px;
+
   font-family: inherit;
+
   background-color: white;
 }
 
 .borrow-form label {
   font-weight: bold;
+
   color: #374151;
 }
 
 .borrow-form button,
 .borrow-card button {
   border: none;
+
   background-color: #2563eb;
+
   color: white;
+
   padding: 10px 16px;
+
   border-radius: 7px;
+
   cursor: pointer;
+
   font-weight: bold;
+
+  transition: 0.2s ease;
 }
 
 .borrow-form button:hover,
 .borrow-card button:hover {
   background-color: #1d4ed8;
+
+  transform: translateY(-1px);
 }
 
-/* =========================
+
+/* ============================================================
    BORROWING RECORDS
-========================= */
+============================================================ */
 
 .borrow-list,
 .overdue-list {
@@ -592,38 +1177,54 @@ button {
 
 .borrow-card {
   background-color: white;
+
   padding: 22px;
+
   margin-bottom: 15px;
+
   border-radius: 12px;
+
   border-left: 5px solid #2563eb;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+
+  box-shadow:
+    0 4px 12px rgba(15, 23, 42, 0.06);
 }
 
 .borrow-card h3 {
   margin-top: 0;
+
   color: #1e3a8a;
 }
 
 .borrow-card p {
   margin: 7px 0;
+
   color: #4b5563;
 }
 
-/* =========================
+
+/* ============================================================
    OVERDUE
-========================= */
+============================================================ */
 
 .overdue-card {
   background-color: #fff7ed;
+
   padding: 20px;
+
   margin-bottom: 15px;
+
   border-radius: 12px;
+
   border-left: 5px solid #f97316;
-  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.05);
+
+  box-shadow:
+    0 3px 10px rgba(15, 23, 42, 0.05);
 }
 
 .overdue-card h3 {
   margin-top: 0;
+
   color: #c2410c;
 }
 
@@ -631,16 +1232,22 @@ button {
   color: #7c2d12;
 }
 
-/* =========================
+
+/* ============================================================
    EMPTY STATE
-========================= */
+============================================================ */
 
 .empty-books,
 .empty-state {
   text-align: center;
+
   padding: 50px 20px;
+
   background-color: white;
+
   border-radius: 12px;
+
+  border: 1px solid #e5e7eb;
 }
 
 .empty-books h3,
@@ -653,33 +1260,602 @@ button {
   color: #6b7280;
 }
 
-/* =========================
-   GENERAL FORM INPUTS
-========================= */
 
-input,
-textarea,
-select {
-  font-family: inherit;
+/* ============================================================
+   PUBLIC BOOKS PAGE
+============================================================ */
+
+.public-books-page {
+  min-height: 100vh;
+
+  padding: 60px 8%;
+
+  background: #f7f9fc;
 }
 
-input::placeholder,
-textarea::placeholder {
-  color: #9ca3af;
+
+/* ============================================================
+   PUBLIC BOOKS HEADER
+============================================================ */
+
+.public-books-header {
+  text-align: center;
+
+  margin-bottom: 40px;
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
+.public-books-label {
+  color: #2563eb;
+
+  font-weight: 700;
+
+  letter-spacing: 2px;
+
+  font-size: 14px;
+
+  margin-bottom: 10px;
+}
+
+.public-books-header h1 {
+  font-size: 42px;
+
+  color: #172554;
+
+  margin: 0 0 12px;
+}
+
+.public-books-header p {
+  color: #64748b;
+
+  font-size: 17px;
+}
+
+
+/* ============================================================
+   PUBLIC BOOK SEARCH
+============================================================ */
+
+.public-books-search {
+  max-width: 700px;
+
+  margin: 0 auto 25px;
+}
+
+.public-books-search input {
+  width: 100%;
+
+  padding: 15px 20px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 10px;
+
+  font-size: 16px;
+
+  outline: none;
+
+  box-sizing: border-box;
+
+  transition: 0.2s ease;
+}
+
+.public-books-search input:focus {
+  border-color: #2563eb;
+
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+
+/* ============================================================
+   PUBLIC BOOK COUNT
+============================================================ */
+
+.public-books-count {
+  max-width: 1200px;
+
+  margin: 0 auto 20px;
+
+  color: #64748b;
+
+  font-size: 15px;
+}
+
+
+/* ============================================================
+   PUBLIC BOOK GRID
+============================================================ */
+
+.public-books-grid {
+  max-width: 1200px;
+
+  margin: 0 auto;
+
+  display: grid;
+
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 25px;
+}
+
+
+/* ============================================================
+   PUBLIC BOOK CARD
+============================================================ */
+
+.public-book-card {
+  background: white;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 14px;
+
+  overflow: hidden;
+
+  transition: 0.2s ease;
+}
+
+.public-book-card:hover {
+  transform: translateY(-4px);
+
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+
+/* ============================================================
+   PUBLIC BOOK COVER
+============================================================ */
+
+.public-book-cover {
+  width: 100%;
+
+  height: 300px;
+
+  background: #e2e8f0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+.public-book-cover img {
+  width: 100%;
+
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.cover-placeholder {
+  font-size: 60px;
+}
+
+
+/* ============================================================
+   PUBLIC BOOK INFORMATION
+============================================================ */
+
+.public-book-info {
+  padding: 22px;
+}
+
+.public-book-info h2 {
+  color: #172554;
+
+  font-size: 21px;
+
+  margin: 0 0 8px;
+}
+
+.public-book-author {
+  color: #334155;
+
+  font-weight: 600;
+
+  margin: 0 0 8px;
+}
+
+.public-book-category {
+  display: inline-block;
+
+  background: #eef2ff;
+
+  color: #3730a3;
+
+  padding: 5px 10px;
+
+  border-radius: 20px;
+
+  font-size: 13px;
+
+  margin-bottom: 12px;
+}
+
+.public-book-description {
+  color: #64748b;
+
+  font-size: 14px;
+
+  line-height: 1.5;
+
+  min-height: 42px;
+}
+
+
+/* ============================================================
+   PUBLIC BOOK AVAILABILITY
+============================================================ */
+
+.public-book-availability {
+  margin: 15px 0;
+}
+
+.available {
+  color: #15803d;
+
+  background: #dcfce7;
+
+  padding: 6px 12px;
+
+  border-radius: 20px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+.unavailable {
+  color: #b91c1c;
+
+  background: #fee2e2;
+
+  padding: 6px 12px;
+
+  border-radius: 20px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+
+/* ============================================================
+   VIEW BOOK BUTTON
+============================================================ */
+
+.view-book-button {
+  display: inline-block;
+
+  background: #2563eb;
+
+  color: white;
+
+  text-decoration: none;
+
+  padding: 10px 18px;
+
+  border-radius: 7px;
+
+  font-weight: 600;
+
+  margin-top: 5px;
+
+  transition: 0.2s ease;
+}
+
+.view-book-button:hover {
+  background: #1d4ed8;
+
+  transform: translateY(-1px);
+}
+
+
+/* ============================================================
+   NO PUBLIC BOOKS
+============================================================ */
+
+.no-public-books {
+  text-align: center;
+
+  padding: 70px 20px;
+}
+
+.no-public-books h2 {
+  color: #172554;
+}
+
+.no-public-books p {
+  color: #64748b;
+}
+
+
+/* ============================================================
+   PUBLIC BOOK ERROR
+============================================================ */
+
+.public-books-error {
+  color: #dc2626;
+}
+
+
+/* ============================================================
+   PUBLIC BOOK DETAILS PAGE
+============================================================ */
+
+.book-details-page {
+  min-height: 100vh;
+
+  padding: 50px 8%;
+
+  background: #f7f9fc;
+}
+
+
+/* ============================================================
+   BACK TO BOOKS
+============================================================ */
+
+.back-to-books {
+  display: inline-block;
+
+  margin-bottom: 30px;
+
+  color: #2563eb;
+
+  text-decoration: none;
+
+  font-weight: 600;
+}
+
+.back-to-books:hover {
+  text-decoration: underline;
+}
+
+
+/* ============================================================
+   BOOK DETAILS CONTAINER
+============================================================ */
+
+.book-details-container {
+  max-width: 1100px;
+
+  margin: 0 auto;
+
+  background: white;
+
+  border-radius: 16px;
+
+  padding: 40px;
+
+  display: grid;
+
+  grid-template-columns: 350px 1fr;
+
+  gap: 50px;
+
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.06);
+}
+
+
+/* ============================================================
+   BOOK DETAILS COVER
+============================================================ */
+
+.book-details-cover {
+  width: 350px;
+
+  height: 500px;
+
+  background: #e2e8f0;
+
+  border-radius: 10px;
+
+  overflow: hidden;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+.book-details-cover img {
+  width: 100%;
+
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.details-cover-placeholder {
+  font-size: 90px;
+}
+
+
+/* ============================================================
+   BOOK DETAILS INFORMATION
+============================================================ */
+
+.book-details-info {
+  padding-top: 10px;
+}
+
+.details-category {
+  display: inline-block;
+
+  background: #eef2ff;
+
+  color: #3730a3;
+
+  padding: 6px 14px;
+
+  border-radius: 20px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+.book-details-info h1 {
+  font-size: 42px;
+
+  color: #172554;
+
+  margin: 15px 0 8px;
+}
+
+.book-details-info h3 {
+  color: #64748b;
+
+  font-size: 18px;
+
+  margin-bottom: 35px;
+}
+
+
+/* ============================================================
+   BOOK DETAILS SECTIONS
+============================================================ */
+
+.details-section {
+  margin-bottom: 30px;
+}
+
+.details-section h2 {
+  color: #172554;
+
+  font-size: 20px;
+
+  margin-bottom: 12px;
+}
+
+.details-section p {
+  color: #64748b;
+
+  line-height: 1.7;
+}
+
+
+/* ============================================================
+   BOOK INFORMATION
+============================================================ */
+
+.book-information {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 20px;
+}
+
+.book-information div {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.book-information span,
+.availability-box span {
+  color: #64748b;
+
+  font-size: 14px;
+}
+
+.book-information strong {
+  color: #172554;
+}
+
+
+/* ============================================================
+   AVAILABILITY BOX
+============================================================ */
+
+.availability-box {
+  display: flex;
+
+  gap: 50px;
+
+  margin-bottom: 15px;
+}
+
+.availability-box div {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.availability-box strong {
+  color: #172554;
+
+  font-size: 25px;
+}
+
+.details-available {
+  color: #15803d !important;
+
+  font-weight: 600;
+}
+
+.details-unavailable {
+  color: #b91c1c !important;
+
+  font-weight: 600;
+}
+
+
+/* ============================================================
+   LOGIN / BORROW BUTTON
+============================================================ */
+
+.login-borrow-button {
+  display: inline-block;
+
+  background: #2563eb;
+
+  color: white;
+
+  text-decoration: none;
+
+  padding: 13px 25px;
+
+  border-radius: 8px;
+
+  font-weight: 600;
+
+  margin-top: 5px;
+
+  transition: 0.2s ease;
+}
+
+.login-borrow-button:hover {
+  background: #1d4ed8;
+
+  transform: translateY(-1px);
+}
+
+
+/* ============================================================
+   RESPONSIVE - LARGE TABLET
+============================================================ */
 
 @media (max-width: 1000px) {
 
   .sidebar {
-    width: 200px;
+    width: 215px;
   }
 
   .content {
-    padding: 20px;
+    padding: 24px;
   }
 
   .cards {
@@ -697,7 +1873,40 @@ textarea::placeholder {
   .categories-list {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .public-books-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
 }
+
+
+/* ============================================================
+   RESPONSIVE - TABLET
+============================================================ */
+
+@media (max-width: 850px) {
+
+  .book-details-container {
+    grid-template-columns: 1fr;
+
+    padding: 25px;
+  }
+
+  .book-details-cover {
+    width: 100%;
+
+    max-width: 350px;
+
+    margin: 0 auto;
+  }
+
+}
+
+
+/* ============================================================
+   RESPONSIVE - SMALL TABLET
+============================================================ */
 
 @media (max-width: 750px) {
 
@@ -710,39 +1919,157 @@ textarea::placeholder {
   .categories-list {
     grid-template-columns: 1fr;
   }
+
+  .user-details {
+    display: none;
+  }
+
 }
 
+
+/* ============================================================
+   RESPONSIVE - MOBILE
+============================================================ */
+
 @media (max-width: 650px) {
+
+  /* -------------------------
+     NAVBAR
+  ------------------------- */
+
+  .navbar {
+    height: 65px;
+
+    padding: 0 15px;
+  }
+
+  .navbar-brand {
+    gap: 8px;
+  }
+
+  .navbar-brand h2 {
+    font-size: 15px;
+  }
+
+  .navbar-brand span {
+    display: none;
+  }
+
+  .navbar-logo {
+    width: 36px;
+
+    height: 36px;
+
+    font-size: 18px;
+  }
+
+  .navbar-user {
+    gap: 8px;
+  }
+
+  .user-avatar {
+    width: 34px;
+
+    height: 34px;
+  }
+
+  .logout-button {
+    padding: 8px 10px;
+  }
+
+  .logout-button span {
+    display: none;
+  }
+
+
+  /* -------------------------
+     LAYOUT
+  ------------------------- */
 
   .layout {
     flex-direction: column;
   }
 
+
+  /* -------------------------
+     SIDEBAR
+  ------------------------- */
+
   .sidebar {
     width: 100%;
+
+    min-height: auto;
+
     padding: 15px;
+
+    position: relative;
   }
 
-  .sidebar ul {
+  .sidebar-header {
+    padding-bottom: 15px;
+  }
+
+  .sidebar-section-title {
+    margin: 15px 5px 8px;
+  }
+
+  .sidebar-menu {
     display: flex;
+
     flex-wrap: wrap;
+
     gap: 5px;
-    margin-top: 15px;
   }
 
-  .sidebar li {
-    margin-bottom: 0;
+  .sidebar-menu li {
+    margin: 0;
   }
+
+  .sidebar-menu li a {
+    padding: 9px 11px;
+
+    font-size: 12px;
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+
+
+  /* -------------------------
+     CONTENT
+  ------------------------- */
+
+  .content {
+    padding: 18px;
+  }
+
+
+  /* -------------------------
+     DASHBOARD
+  ------------------------- */
 
   .cards {
     grid-template-columns: 1fr;
   }
 
+
+  /* -------------------------
+     PAGE HEADER
+  ------------------------- */
+
   .page-header {
     align-items: flex-start;
+
     gap: 15px;
+
     flex-direction: column;
   }
+
+
+  /* -------------------------
+     SEARCH
+  ------------------------- */
 
   .search-section {
     flex-wrap: wrap;
@@ -750,14 +2077,282 @@ textarea::placeholder {
 
   .search-section input {
     width: 100%;
+
     max-width: none;
   }
 
-  .content {
-    padding: 15px;
+
+  /* -------------------------
+     PUBLIC BOOKS
+  ------------------------- */
+
+  .public-books-page {
+    padding: 40px 20px;
   }
 
-  .navbar {
-    padding: 0 15px;
+  .public-books-grid {
+    grid-template-columns: 1fr;
   }
+
+  .public-books-header h1 {
+    font-size: 32px;
+  }
+
+
+  /* -------------------------
+     BOOK DETAILS
+  ------------------------- */
+
+  .book-details-page {
+    padding: 30px 20px;
+  }
+
+  .book-details-info h1 {
+    font-size: 32px;
+  }
+
+  .book-information {
+    grid-template-columns: 1fr;
+  }
+
+  .availability-box {
+    gap: 30px;
+  }
+
+}
+
+
+/* ============================================================
+   RESPONSIVE - VERY SMALL MOBILE
+============================================================ */
+
+@media (max-width: 450px) {
+
+  .navbar-brand h2 {
+    font-size: 13px;
+  }
+
+  .navbar-logo {
+    width: 32px;
+
+    height: 32px;
+
+    font-size: 16px;
+  }
+
+  .user-avatar {
+    width: 32px;
+
+    height: 32px;
+
+    font-size: 14px;
+  }
+
+  .content {
+    padding: 14px;
+  }
+
+  .book-form,
+  .borrow-form {
+    padding: 18px;
+  }
+
+  .public-book-info {
+    padding: 18px;
+  }
+
+  .book-details-container {
+    padding: 18px;
+  }
+
+  .availability-box {
+    flex-direction: column;
+
+    gap: 15px;
+  }
+
+}
+/* ============================================================
+   MEMBER - MY BORROWED BOOKS
+============================================================ */
+
+.member-borrows-page {
+  width: 100%;
+}
+
+
+/* PAGE HEADER */
+
+.member-borrows-page .page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.member-borrows-page .page-header p {
+  margin: 0 0 5px;
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.member-borrows-page .page-header h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  color: #172554;
+}
+
+.member-borrows-page .page-header span {
+  color: #475569;
+  font-size: 16px;
+}
+
+
+/* BORROW LIST */
+
+.member-borrow-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+
+/* BORROW CARD */
+
+.member-borrow-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+
+  background: #ffffff;
+
+  padding: 22px 25px;
+
+  border: 1px solid #e5e7eb;
+  border-left: 5px solid #2563eb;
+
+  border-radius: 12px;
+
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+
+  transition: transform 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
+.member-borrow-card:hover {
+  transform: translateY(-2px);
+
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.09);
+}
+
+
+/* BOOK INFORMATION */
+
+.member-borrow-card h2 {
+  margin: 0 0 12px;
+
+  color: #1e3a8a;
+
+  font-size: 21px;
+}
+
+.member-borrow-card p {
+  margin: 6px 0;
+
+  color: #64748b;
+
+  font-size: 14px;
+}
+
+
+/* STATUS */
+
+.borrow-status {
+  flex-shrink: 0;
+}
+
+.borrow-status span {
+  display: inline-block;
+
+  padding: 7px 14px;
+
+  border-radius: 20px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+
+/* BORROWED */
+
+.borrow-status .borrowed {
+  background: #dbeafe;
+
+  color: #1d4ed8;
+}
+
+
+/* RETURNED */
+
+.borrow-status .returned {
+  background: #dcfce7;
+
+  color: #15803d;
+}
+
+
+/* EMPTY STATE */
+
+.member-borrows-page .empty-books {
+  border: 1px solid #e5e7eb;
+
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+
+/* ERROR */
+
+.member-borrows-page .auth-error {
+  margin-bottom: 20px;
+
+  padding: 14px 16px;
+
+  background: #fee2e2;
+
+  border: 1px solid #fecaca;
+
+  border-radius: 8px;
+
+  color: #b91c1c;
+}
+
+
+/* ============================================================
+   MEMBER BORROWED BOOKS - RESPONSIVE
+============================================================ */
+
+@media (max-width: 650px) {
+
+  .member-borrows-page .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .member-borrow-card {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+
+    padding: 18px;
+  }
+
+  .borrow-status {
+    align-self: flex-start;
+  }
+
 }

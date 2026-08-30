@@ -10,6 +10,8 @@ public class CreateBookDto
 
     public DateTime PublishedDate { get; set; }
 
+    public string CoverUrl { get; set; } = string.Empty;
+
     public int TotalCopies { get; set; }
 
     public int CategoryId { get; set; }

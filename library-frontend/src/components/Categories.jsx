@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
 
 const API_URL = import.meta.env.VITE_API_URL
+const authHeaders = () => ({
+  'Content-Type': 'application/json',
+  Authorization: `Bearer ${localStorage.getItem('token')}`
+})
 
 function Categories() {
   const [categories, setCategories] = useState([])
@@ -113,9 +117,7 @@ const fetchCategoryBooks = async (categoryId) => {
         `${API_URL}/api/Categories`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: authHeaders(),
           body: JSON.stringify({
             categoryName:
               newCategory.categoryName.trim(),
@@ -208,9 +210,7 @@ const toggleCategoryBooks = (categoryId) => {
         `${API_URL}/api/Categories/${editingCategoryId}`,
         {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: authHeaders(),
           body: JSON.stringify({
             categoryId: editingCategoryId,
 
@@ -263,12 +263,13 @@ const toggleCategoryBooks = (categoryId) => {
     }
 
     try {
-      const response = await fetch(
-        `${API_URL}/api/Categories/${id}`,
-        {
-          method: 'DELETE'
-        }
-      )
+     const response = await fetch(
+  `${API_URL}/api/Categories/${id}`,
+  {
+    method: 'DELETE',
+    headers: authHeaders()
+  }
+)
 
       if (!response.ok) {
         const errorText = await response.text()

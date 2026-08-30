@@ -141,16 +141,19 @@ function Authors() {
     }
 
     try {
-      const response = await fetch(
-        `${API_URL}/api/Authors`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(newAuthor)
-        }
-      )
+      const token = localStorage.getItem('token')
+
+const response = await fetch(
+  `${API_URL}/api/Authors`,
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(newAuthor)
+  }
+)
 
       if (!response.ok) {
         throw new Error('Failed to add author')
@@ -188,16 +191,19 @@ function Authors() {
     }
 
     try {
-      const response = await fetch(
-        `${API_URL}/api/Authors/${editingAuthorId}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(newAuthor)
-        }
-      )
+      const token = localStorage.getItem('token')
+
+const response = await fetch(
+  `${API_URL}/api/Authors/${editingAuthorId}`,
+  {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(newAuthor)
+  }
+)
 
       if (!response.ok) {
         throw new Error('Failed to update author')
@@ -249,13 +255,17 @@ function Authors() {
     }
 
     try {
-      const response = await fetch(
-        `${API_URL}/api/Authors/${id}`,
-        {
-          method: 'DELETE'
-        }
-      )
+      const token = localStorage.getItem('token')
 
+const response = await fetch(
+  `${API_URL}/api/Authors/${id}`,
+  {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  }
+)
       if (!response.ok) {
         throw new Error('Failed to delete author')
       }

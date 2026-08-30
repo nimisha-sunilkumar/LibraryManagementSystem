@@ -1,6 +1,7 @@
 ﻿using LibraryApi.Data;
 using LibraryApi.DTOs;
 using LibraryApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +18,11 @@ public class AuthorsController : ControllerBase
         _context = context;
     }
 
+    // =========================================================
     // POST: api/Authors
+    // Admin only
+    // =========================================================
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> CreateAuthor(CreateAuthorDto dto)
     {
@@ -31,10 +36,18 @@ public class AuthorsController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return Ok(author);
+        return CreatedAtAction(
+            nameof(GetAuthorById),
+            new { id = author.AuthorId },
+            author
+        );
     }
 
+    // =========================================================
     // GET: api/Authors
+    // Public
+    // =========================================================
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetAllAuthors()
     {
@@ -50,7 +63,11 @@ public class AuthorsController : ControllerBase
         return Ok(authors);
     }
 
-    // GET: api/Authors/1
+    // =========================================================
+    // GET: api/Authors/{id}
+    // Public
+    // =========================================================
+    [AllowAnonymous]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetAuthorById(int id)
     {
@@ -69,13 +86,21 @@ public class AuthorsController : ControllerBase
                         Title = ba.Book.Title,
                         ISBN = ba.Book.ISBN,
                         Description = ba.Book.Description,
-                        PublishedDate = DateOnly.FromDateTime(
-                            ba.Book.PublishedDate
-                        ),
+
+                        PublishedDate =
+                            DateOnly.FromDateTime(
+                                ba.Book.PublishedDate
+                            ),
+
                         TotalCopies = ba.Book.TotalCopies,
                         AvailableCopies = ba.Book.AvailableCopies,
+
                         CategoryId = ba.Book.CategoryId,
-                        CategoryName = ba.Book.Category.CategoryName
+
+                        CategoryName =
+                            ba.Book.Category != null
+                                ? ba.Book.Category.CategoryName
+                                : null
                     })
                     .ToList()
             })
@@ -89,7 +114,11 @@ public class AuthorsController : ControllerBase
         return Ok(author);
     }
 
-    // PUT: api/Authors/1
+    // =========================================================
+    // PUT: api/Authors/{id}
+    // Admin only
+    // =========================================================
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateAuthor(
         int id,
@@ -110,7 +139,11 @@ public class AuthorsController : ControllerBase
         return Ok(author);
     }
 
-    // DELETE: api/Authors/1
+    // =========================================================
+    // DELETE: api/Authors/{id}
+    // Admin only
+    // =========================================================
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteAuthor(int id)
     {
@@ -125,6 +158,6 @@ public class AuthorsController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return Ok("Author deleted successfully");
+        return NoContent();
     }
 }

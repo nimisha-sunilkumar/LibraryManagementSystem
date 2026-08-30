@@ -1,10 +1,23 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using LibraryApi.Data;
+using Scalar.AspNetCore;
+using System.Text;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// ============================================================
+// SERVICES
+// ============================================================
+
 builder.Services.AddControllers();
+
+
+// ============================================================
+// CORS
+// ============================================================
 
 builder.Services.AddCors(options =>
 {
@@ -17,22 +30,118 @@ builder.Services.AddCors(options =>
     });
 });
 
+
+// ============================================================
+// DATABASE
+// ============================================================
+
 builder.Services.AddDbContext<LibraryDbContext>(options =>
     options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    ));
+
+
+// ============================================================
+// JWT AUTHENTICATION
+// ============================================================
+
+var jwtKey = builder.Configuration["Jwt:Key"];
+
+if (string.IsNullOrEmpty(jwtKey))
+{
+    throw new InvalidOperationException(
+        "JWT key is not configured."
+    );
+}
+
+Console.WriteLine(
+    "JWT KEY LOADED: " + !string.IsNullOrEmpty(jwtKey)
+);
+
+builder.Services.AddAuthentication(
+    JwtBearerDefaults.AuthenticationScheme
+)
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(jwtKey)
+        ),
+
+        ValidateIssuer = false,
+        ValidateAudience = false,
+
+        ValidateLifetime = true,
+
+        ClockSkew = TimeSpan.Zero
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine(
+                "JWT AUTHENTICATION FAILED: " +
+                context.Exception.Message
+            );
+
+            return Task.CompletedTask;
+        },
+
+        OnTokenValidated = context =>
+        {
+            Console.WriteLine(
+                "JWT TOKEN VALIDATED SUCCESSFULLY"
+            );
+
+            return Task.CompletedTask;
+        }
+    };
+});
+// ============================================================
+// AUTHORIZATION
+// ============================================================
+
+builder.Services.AddAuthorization();
+
+
+// ============================================================
+// OPENAPI
+// ============================================================
 
 builder.Services.AddOpenApi();
 
+
+// ============================================================
+// APPLICATION
+// ============================================================
+
 var app = builder.Build();
+
+
+// ============================================================
+// OPENAPI
+// ============================================================
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
+
+
+// ============================================================
+// MIDDLEWARE
+// ============================================================
 
 app.UseCors("AllowFrontend");
 
 // app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

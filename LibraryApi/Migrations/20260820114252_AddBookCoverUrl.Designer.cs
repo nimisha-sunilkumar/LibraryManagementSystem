@@ -3,6 +3,7 @@ using System;
 using LibraryApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LibraryApi.Migrations
 {
     [DbContext(typeof(LibraryDbContext))]
-    partial class LibraryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260820114252_AddBookCoverUrl")]
+    partial class AddBookCoverUrl
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -207,43 +210,12 @@ namespace LibraryApi.Migrations
                     b.ToTable("Members");
                 });
 
-            modelBuilder.Entity("LibraryApi.Models.UserAccount", b =>
-                {
-                    b.Property<int>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserId"));
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int?>("MemberId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("UserId");
-
-                    b.HasIndex("MemberId")
-                        .IsUnique();
-
-                    b.ToTable("UserAccounts");
-                });
-
             modelBuilder.Entity("LibraryApi.Models.Book", b =>
                 {
                     b.HasOne("LibraryApi.Models.Category", "Category")
                         .WithMany("Books")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Category");
@@ -283,16 +255,6 @@ namespace LibraryApi.Migrations
                         .IsRequired();
 
                     b.Navigation("Book");
-
-                    b.Navigation("Member");
-                });
-
-            modelBuilder.Entity("LibraryApi.Models.UserAccount", b =>
-                {
-                    b.HasOne("LibraryApi.Models.Member", "Member")
-                        .WithOne()
-                        .HasForeignKey("LibraryApi.Models.UserAccount", "MemberId")
-                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Member");
                 });

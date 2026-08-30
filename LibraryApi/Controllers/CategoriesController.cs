@@ -1,6 +1,7 @@
 ﻿using LibraryApi.DTOs;
 using LibraryApi.Data;
 using LibraryApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,14 +18,20 @@ public class CategoriesController : ControllerBase
         _context = context;
     }
 
+    // ============================================================
     // GET: api/Categories
+    // PUBLIC
+    // ============================================================
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
     {
         return await _context.Categories.ToListAsync();
     }
 
-    // GET: api/Categories/1
+    // ============================================================
+    // GET: api/Categories/{id}
+    // PUBLIC
+    // ============================================================
     [HttpGet("{id}")]
     public async Task<IActionResult> GetCategory(int id)
     {
@@ -60,7 +67,11 @@ public class CategoriesController : ControllerBase
         return Ok(category);
     }
 
+    // ============================================================
     // POST: api/Categories
+    // ADMIN ONLY
+    // ============================================================
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<Category>> CreateCategory(
         CreateCategoryDto dto)
@@ -81,7 +92,11 @@ public class CategoriesController : ControllerBase
             category);
     }
 
-    // PUT: api/Categories/1
+    // ============================================================
+    // PUT: api/Categories/{id}
+    // ADMIN ONLY
+    // ============================================================
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateCategory(
         int id,
@@ -100,7 +115,11 @@ public class CategoriesController : ControllerBase
         return NoContent();
     }
 
-    // DELETE: api/Categories/1
+    // ============================================================
+    // DELETE: api/Categories/{id}
+    // ADMIN ONLY
+    // ============================================================
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteCategory(int id)
     {

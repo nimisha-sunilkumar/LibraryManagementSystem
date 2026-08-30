@@ -12,6 +12,9 @@ public class Book
 
     public DateTime PublishedDate { get; set; }
 
+    // Book cover image URL
+    public string CoverUrl { get; set; } = string.Empty;
+
     public int TotalCopies { get; set; }
 
     public int AvailableCopies { get; set; }
@@ -21,7 +24,9 @@ public class Book
     public Category? Category { get; set; }
 
     // Navigation Property
-    public ICollection<BookAuthor> BookAuthors { get; set; } = new List<BookAuthor>();
+    public ICollection<BookAuthor> BookAuthors { get; set; }
+        = new List<BookAuthor>();
 
-    public ICollection<Borrow> Borrows { get; set; } = new List<Borrow>();
+    public ICollection<Borrow> Borrows { get; set; }
+        = new List<Borrow>();
 }

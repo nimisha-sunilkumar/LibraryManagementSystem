@@ -1,35 +1,230 @@
-function Sidebar({ setActivePage }) {
+import { NavLink } from 'react-router-dom'
+
+function Sidebar() {
+
+  const role = localStorage.getItem('role')
+
+  const isAdmin = role === 'Admin'
+
+
   return (
+
     <aside className="sidebar">
-      <h2>Menu</h2>
 
-      <ul>
-        <li onClick={() => setActivePage('dashboard')}>
-          Dashboard
-        </li>
+      {/* ======================================================
+          SIDEBAR HEADER
+      ====================================================== */}
 
-        <li onClick={() => setActivePage('books')}>
-          Books
-        </li>
+      <div className="sidebar-header">
 
-        <li onClick={() => setActivePage('authors')}>
-          Authors
-        </li>
+        <div className="sidebar-icon">
+          {isAdmin ? '⚙️' : '📖'}
+        </div>
 
-        <li onClick={() => setActivePage('categories')}>
-          Categories
-        </li>
+        <div>
 
-        <li onClick={() => setActivePage('members')}>
-          Members
-        </li>
+          <h2>
+            {isAdmin ? 'Administration' : 'Library'}
+          </h2>
 
-        <li onClick={() => setActivePage('borrow')}>
-          Borrow & Return
-        </li>
+          <p>
+            {isAdmin
+              ? 'Manage your library'
+              : 'Explore your library'}
+          </p>
+
+        </div>
+
+      </div>
+
+
+      {/* ======================================================
+          SECTION TITLE
+      ====================================================== */}
+
+      <div className="sidebar-section-title">
+        {isAdmin ? 'ADMIN MENU' : 'MEMBER MENU'}
+      </div>
+
+
+      {/* ======================================================
+          MENU
+      ====================================================== */}
+
+      <ul className="sidebar-menu">
+
+        {isAdmin && (
+          <>
+
+            <li>
+              <NavLink to="/admin/dashboard">
+
+                <span className="menu-icon">
+                  📊
+                </span>
+
+                Dashboard
+
+              </NavLink>
+            </li>
+
+
+            <li>
+              <NavLink to="/admin/books">
+
+                <span className="menu-icon">
+                  📚
+                </span>
+
+                Books
+
+              </NavLink>
+            </li>
+
+
+            <li>
+              <NavLink to="/admin/authors">
+
+                <span className="menu-icon">
+                  ✍️
+                </span>
+
+                Authors
+
+              </NavLink>
+            </li>
+
+
+            <li>
+              <NavLink to="/admin/categories">
+
+                <span className="menu-icon">
+                  🏷️
+                </span>
+
+                Categories
+
+              </NavLink>
+            </li>
+
+
+            <li>
+              <NavLink to="/admin/members">
+
+                <span className="menu-icon">
+                  👥
+                </span>
+
+                Members
+
+              </NavLink>
+            </li>
+
+
+            <li>
+              <NavLink to="/admin/borrow">
+
+                <span className="menu-icon">
+                  🔄
+                </span>
+
+                Borrow & Return
+
+              </NavLink>
+            </li>
+
+          </>
+        )}
+
+
+        {!isAdmin && (
+          <>
+
+            <li>
+              <NavLink to="/member/dashboard">
+
+                <span className="menu-icon">
+                  📊
+                </span>
+
+                Dashboard
+
+              </NavLink>
+            </li>
+
+
+            <li>
+              <NavLink to="/member/books">
+
+                <span className="menu-icon">
+                  📚
+                </span>
+
+                Books
+
+              </NavLink>
+            </li>
+
+
+            <li>
+              <NavLink to="/member/borrowed">
+
+                <span className="menu-icon">
+                  📋
+                </span>
+
+                My Borrowed Books
+
+              </NavLink>
+            </li>
+
+
+            <li>
+              <NavLink to="/member/profile">
+
+                <span className="menu-icon">
+                  👤
+                </span>
+
+                My Profile
+
+              </NavLink>
+            </li>
+
+          </>
+        )}
+
       </ul>
+
+
+      {/* ======================================================
+          SIDEBAR FOOTER
+      ====================================================== */}
+
+      <div className="sidebar-footer">
+
+        <div className="sidebar-footer-icon">
+          📚
+        </div>
+
+        <div>
+
+          <strong>
+            Library System
+          </strong>
+
+          <span>
+            v1.0
+          </span>
+
+        </div>
+
+      </div>
+
     </aside>
+
   )
+
 }
 
 export default Sidebar

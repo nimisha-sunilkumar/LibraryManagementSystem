@@ -18,6 +18,7 @@ function Books() {
     isbn: '',
     description: '',
     publishedDate: '',
+    coverUrl: '',
     totalCopies: 0,
     availableCopies: 0,
     categoryId: 0,
@@ -25,9 +26,9 @@ function Books() {
   })
 
 
-  // ---------------------------------------
-  // Reset form
-  // ---------------------------------------
+  // ============================================================
+  // RESET FORM
+  // ============================================================
 
   const resetForm = () => {
     setNewBook({
@@ -35,6 +36,7 @@ function Books() {
       isbn: '',
       description: '',
       publishedDate: '',
+      coverUrl: '',
       totalCopies: 0,
       availableCopies: 0,
       categoryId: 0,
@@ -46,9 +48,9 @@ function Books() {
   }
 
 
-  // ---------------------------------------
-  // Get all books
-  // ---------------------------------------
+  // ============================================================
+  // GET ALL BOOKS
+  // ============================================================
 
   const fetchBooks = () => {
     fetch(`${API_URL}/api/Books`)
@@ -68,9 +70,9 @@ function Books() {
   }
 
 
-  // ---------------------------------------
-  // Get all authors
-  // ---------------------------------------
+  // ============================================================
+  // GET ALL AUTHORS
+  // ============================================================
 
   const fetchAuthors = () => {
     fetch(`${API_URL}/api/Authors`)
@@ -90,9 +92,9 @@ function Books() {
   }
 
 
-  // ---------------------------------------
-  // Get all categories
-  // ---------------------------------------
+  // ============================================================
+  // GET ALL CATEGORIES
+  // ============================================================
 
   const fetchCategories = () => {
     fetch(`${API_URL}/api/Categories`)
@@ -112,9 +114,9 @@ function Books() {
   }
 
 
-  // ---------------------------------------
-  // Load data when page opens
-  // ---------------------------------------
+  // ============================================================
+  // LOAD DATA
+  // ============================================================
 
   useEffect(() => {
     fetchBooks()
@@ -123,9 +125,9 @@ function Books() {
   }, [])
 
 
-  // ---------------------------------------
-  // Add book
-  // ---------------------------------------
+  // ============================================================
+  // ADD BOOK
+  // ============================================================
 
   const handleAddBook = async (event) => {
     event.preventDefault()
@@ -159,16 +161,22 @@ function Books() {
     }
 
     try {
+      const token = localStorage.getItem('token')
+
       const response = await fetch(`${API_URL}/api/Books`, {
         method: 'POST',
+
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
+
         body: JSON.stringify({
           title: newBook.title,
           isbn: newBook.isbn,
           description: newBook.description,
           publishedDate: newBook.publishedDate,
+          coverUrl: newBook.coverUrl,
           totalCopies: newBook.totalCopies,
           categoryId: newBook.categoryId,
           authorId: newBook.authorId
@@ -178,7 +186,9 @@ function Books() {
       if (!response.ok) {
         const errorText = await response.text()
 
-        throw new Error(errorText || 'Failed to add book')
+        throw new Error(
+          errorText || 'Failed to add book'
+        )
       }
 
       alert('Book added successfully!')
@@ -196,9 +206,9 @@ function Books() {
   }
 
 
-  // ---------------------------------------
-  // Update book
-  // ---------------------------------------
+  // ============================================================
+  // UPDATE BOOK
+  // ============================================================
 
   const handleUpdateBook = async (event) => {
     event.preventDefault()
@@ -224,19 +234,30 @@ function Books() {
       return
     }
 
+    if (!newBook.authorId) {
+      alert('Please select an author.')
+      return
+    }
+
     try {
+      const token = localStorage.getItem('token')
+
       const response = await fetch(
         `${API_URL}/api/Books/${editingBookId}`,
         {
           method: 'PUT',
+
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
           },
+
           body: JSON.stringify({
             title: newBook.title,
             isbn: newBook.isbn,
             description: newBook.description,
             publishedDate: newBook.publishedDate,
+            coverUrl: newBook.coverUrl,
             totalCopies: newBook.totalCopies,
             categoryId: newBook.categoryId,
             authorId: newBook.authorId
@@ -267,9 +288,9 @@ function Books() {
   }
 
 
-  // ---------------------------------------
-  // Delete book
-  // ---------------------------------------
+  // ============================================================
+  // DELETE BOOK
+  // ============================================================
 
   const handleDeleteBook = async (id) => {
     const confirmed = window.confirm(
@@ -281,10 +302,16 @@ function Books() {
     }
 
     try {
+      const token = localStorage.getItem('token')
+
       const response = await fetch(
         `${API_URL}/api/Books/${id}`,
         {
-          method: 'DELETE'
+          method: 'DELETE',
+
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         }
       )
 
@@ -310,57 +337,57 @@ function Books() {
   }
 
 
-  // ---------------------------------------
-// Search books
-// ---------------------------------------
+  // ============================================================
+  // SEARCH BOOKS
+  // ============================================================
 
-const searchBooks = () => {
-  if (!searchText.trim()) {
-    fetchBooks()
-    return
+  const searchBooks = () => {
+    if (!searchText.trim()) {
+      fetchBooks()
+      return
+    }
+
+    let url = ''
+
+    if (searchType === 'title') {
+      url =
+        `${API_URL}/api/Books/search?title=` +
+        encodeURIComponent(searchText.trim())
+    }
+
+    else if (searchType === 'author') {
+      url =
+        `${API_URL}/api/Books/author/` +
+        encodeURIComponent(searchText.trim())
+    }
+
+    else if (searchType === 'category') {
+      url =
+        `${API_URL}/api/Books/category/` +
+        encodeURIComponent(searchText.trim())
+    }
+
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('No books found')
+        }
+
+        return response.json()
+      })
+      .then(data => {
+        setBooks(data)
+      })
+      .catch(error => {
+        console.error('Error searching books:', error)
+        setBooks([])
+      })
   }
 
-  let url = ''
 
-  if (searchType === 'title') {
-    url =
-      `${API_URL}/api/Books/search?title=` +
-      encodeURIComponent(searchText.trim())
-  }
-
-  else if (searchType === 'author') {
-    url =
-      `${API_URL}/api/Books/author/` +
-      encodeURIComponent(searchText.trim())
-  }
-
-  else if (searchType === 'category') {
-    url =
-      `${API_URL}/api/Books/category/` +
-      encodeURIComponent(searchText.trim())
-  }
-
-  fetch(url)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('No books found')
-      }
-
-      return response.json()
-    })
-    .then(data => {
-      setBooks(data)
-    })
-    .catch(error => {
-      console.error('Error searching books:', error)
-      setBooks([])
-    })
-}
-
-
-  // ---------------------------------------
-  // Show all books
-  // ---------------------------------------
+  // ============================================================
+  // SHOW ALL BOOKS
+  // ============================================================
 
   const showAllBooks = () => {
     setSearchText('')
@@ -368,14 +395,13 @@ const searchBooks = () => {
   }
 
 
-  // ---------------------------------------
-  // Edit book
-  // ---------------------------------------
+  // ============================================================
+  // EDIT BOOK
+  // ============================================================
 
   const handleEditBook = (book) => {
     setEditingBookId(book.bookId)
 
-    // Find author ID using author name
     const selectedAuthor = authors.find(
       author =>
         author.name?.toLowerCase() ===
@@ -391,6 +417,8 @@ const searchBooks = () => {
         ? book.publishedDate.substring(0, 10)
         : '',
 
+      coverUrl: book.coverUrl || '',
+
       totalCopies: book.totalCopies || 0,
       availableCopies: book.availableCopies || 0,
 
@@ -405,12 +433,26 @@ const searchBooks = () => {
   }
 
 
+  // ============================================================
+  // IMAGE ERROR HANDLER
+  // ============================================================
+
+  const handleImageError = (event) => {
+    event.currentTarget.style.display = 'none'
+    event.currentTarget.nextElementSibling.style.display = 'flex'
+  }
+
+
+  // ============================================================
+  // PAGE
+  // ============================================================
+
   return (
     <div className="books-page">
 
-      {/* -------------------------------- */}
-      {/* Page Header */}
-      {/* -------------------------------- */}
+      {/* ======================================================
+          PAGE HEADER
+      ======================================================= */}
 
       <div className="page-header">
 
@@ -440,9 +482,9 @@ const searchBooks = () => {
       </div>
 
 
-      {/* -------------------------------- */}
-      {/* Add / Edit Form */}
-      {/* -------------------------------- */}
+      {/* ======================================================
+          ADD / EDIT FORM
+      ======================================================= */}
 
       {showForm && (
 
@@ -463,7 +505,6 @@ const searchBooks = () => {
 
 
           <div className="form-grid">
-
 
             {/* Book Title */}
 
@@ -535,6 +576,64 @@ const searchBooks = () => {
 
                 rows="3"
               />
+
+            </div>
+
+
+            {/* =================================================
+                COVER IMAGE URL + PREVIEW
+            ================================================= */}
+
+            <div className="form-group full-width">
+
+              <label>
+                Cover Image URL
+              </label>
+
+              <input
+                type="url"
+                placeholder="https://example.com/book-cover.jpg"
+                value={newBook.coverUrl}
+
+                onChange={event =>
+                  setNewBook({
+                    ...newBook,
+                    coverUrl: event.target.value
+                  })
+                }
+              />
+
+
+              {/* COVER PREVIEW */}
+
+              {newBook.coverUrl && (
+
+                <div className="cover-preview-container">
+
+                  <p>
+                    Cover Preview
+                  </p>
+
+                  <img
+                    src={newBook.coverUrl}
+                    alt="Book cover preview"
+                    className="cover-preview"
+                    onError={handleImageError}
+                  />
+
+                  <div
+                    className="cover-preview-placeholder"
+                    style={{ display: 'none' }}
+                  >
+                    📖
+                    <span>
+                      Image could not be loaded
+                    </span>
+                  </div>
+
+                </div>
+
+              )}
 
             </div>
 
@@ -729,69 +828,82 @@ const searchBooks = () => {
           </div>
 
         </form>
+
       )}
 
 
-      {/* -------------------------------- */}
-{/* Search */}
-{/* -------------------------------- */}
+      {/* ======================================================
+          SEARCH
+      ======================================================= */}
 
-<div className="search-section">
+      <div className="search-section">
 
-  <select
-    value={searchType}
-    onChange={(event) => {
-      setSearchType(event.target.value)
-      setSearchText('')
-    }}
-  >
-    <option value="title">Search by Title</option>
-    <option value="author">Search by Author</option>
-    <option value="category">Search by Category</option>
-  </select>
+        <select
+          value={searchType}
+          onChange={(event) => {
+            setSearchType(event.target.value)
+            setSearchText('')
+          }}
+        >
+          <option value="title">
+            Search by Title
+          </option>
 
-  <input
-    type="text"
-    placeholder={
-      searchType === 'title'
-        ? 'Enter book title...'
-        : searchType === 'author'
-        ? 'Enter author name...'
-        : 'Enter category name...'
-    }
-    value={searchText}
-    onChange={(event) =>
-      setSearchText(event.target.value)
-    }
-    onKeyDown={(event) => {
-      if (event.key === 'Enter') {
-        event.preventDefault()
-        searchBooks()
-      }
-    }}
-  />
+          <option value="author">
+            Search by Author
+          </option>
 
-  <button
-    type="button"
-    className="primary-button"
-    onClick={searchBooks}
-  >
-    Search
-  </button>
+          <option value="category">
+            Search by Category
+          </option>
+        </select>
 
-  <button
-    type="button"
-    className="secondary-button"
-    onClick={showAllBooks}
-  >
-    Show All
-  </button>
 
-</div>
+        <input
+          type="text"
+          placeholder={
+            searchType === 'title'
+              ? 'Enter book title...'
+              : searchType === 'author'
+              ? 'Enter author name...'
+              : 'Enter category name...'
+          }
+          value={searchText}
+          onChange={(event) =>
+            setSearchText(event.target.value)
+          }
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault()
+              searchBooks()
+            }
+          }}
+        />
 
-      {/* -------------------------------- */}
-      {/* Books Table */}
-      {/* -------------------------------- */}
+
+        <button
+          type="button"
+          className="primary-button"
+          onClick={searchBooks}
+        >
+          Search
+        </button>
+
+
+        <button
+          type="button"
+          className="secondary-button"
+          onClick={showAllBooks}
+        >
+          Show All
+        </button>
+
+      </div>
+
+
+      {/* ======================================================
+          BOOKS TABLE
+      ======================================================= */}
 
       <div className="books-table-container">
 
@@ -800,6 +912,10 @@ const searchBooks = () => {
           <thead>
 
             <tr>
+
+              <th>
+                Cover
+              </th>
 
               <th>
                 Title
@@ -846,23 +962,78 @@ const searchBooks = () => {
                 key={book.bookId}
               >
 
+                {/* =================================================
+                    COVER
+                ================================================= */}
+
+                <td>
+
+                  <div className="book-cover-cell">
+
+                    {book.coverUrl ? (
+
+                      <>
+
+                        <img
+                          src={book.coverUrl}
+                          alt={`${book.title} cover`}
+                          className="book-cover-thumbnail"
+                          onError={handleImageError}
+                        />
+
+                        <div
+                          className="book-cover-placeholder"
+                          style={{ display: 'none' }}
+                        >
+                          📖
+                        </div>
+
+                      </>
+
+                    ) : (
+
+                      <div className="book-cover-placeholder">
+                        📖
+                      </div>
+
+                    )}
+
+                  </div>
+
+                </td>
+
+
+                {/* Title */}
+
                 <td className="book-title">
                   {book.title}
                 </td>
+
+
+                {/* ISBN */}
 
                 <td>
                   {book.isbn}
                 </td>
 
+
+                {/* Author */}
+
                 <td>
                   {book.authorName || 'Unknown'}
                 </td>
+
+
+                {/* Category */}
 
                 <td>
                   {book.categoryName ||
                     book.category ||
                     'N/A'}
                 </td>
+
+
+                {/* Published */}
 
                 <td>
                   {book.publishedDate
@@ -873,9 +1044,15 @@ const searchBooks = () => {
                     : 'N/A'}
                 </td>
 
+
+                {/* Total */}
+
                 <td>
                   {book.totalCopies}
                 </td>
+
+
+                {/* Available */}
 
                 <td>
 
@@ -891,6 +1068,9 @@ const searchBooks = () => {
 
                 </td>
 
+
+                {/* Actions */}
+
                 <td>
 
                   <div className="action-buttons">
@@ -903,6 +1083,7 @@ const searchBooks = () => {
                     >
                       Edit
                     </button>
+
 
                     <button
                       className="delete-button"

@@ -10,8 +10,9 @@ public class BookDto
 
     public string Description { get; set; } = string.Empty;
 
-    // Only Date
     public DateOnly PublishedDate { get; set; }
+
+    public string CoverUrl { get; set; } = string.Empty;
 
     public int TotalCopies { get; set; }
 

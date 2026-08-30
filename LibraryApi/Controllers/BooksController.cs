@@ -3,6 +3,7 @@ using LibraryApi.DTOs;
 using LibraryApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LibraryApi.Controllers;
 
@@ -19,9 +20,11 @@ public class BooksController : ControllerBase
 
     // ============================================================
     // POST: api/Books
+    // CREATE BOOK
     // ============================================================
-    [HttpPost]
-    public async Task<IActionResult> CreateBook(CreateBookDto dto)
+    [Authorize(Roles = "Admin")]
+[HttpPost]
+public async Task<IActionResult> CreateBook(CreateBookDto dto)
     {
         // Check author
         var author = await _context.Authors
@@ -44,7 +47,9 @@ public class BooksController : ControllerBase
         // Validate total copies
         if (dto.TotalCopies < 0)
         {
-            return BadRequest("Total copies cannot be negative.");
+            return BadRequest(
+                "Total copies cannot be negative."
+            );
         }
 
         var book = new Book
@@ -57,6 +62,9 @@ public class BooksController : ControllerBase
                 dto.PublishedDate,
                 DateTimeKind.Utc
             ),
+
+            // NEW: Book cover URL
+            CoverUrl = dto.CoverUrl,
 
             TotalCopies = dto.TotalCopies,
 
@@ -81,8 +89,8 @@ public class BooksController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        // Return DTO-like object instead of EF entity
-        // to avoid circular JSON references.
+        // Return safe response object
+        // instead of EF entity to avoid circular JSON references.
         return Ok(new
         {
             book.BookId,
@@ -90,6 +98,10 @@ public class BooksController : ControllerBase
             book.ISBN,
             book.Description,
             book.PublishedDate,
+
+            // NEW
+            book.CoverUrl,
+
             book.TotalCopies,
             book.AvailableCopies,
             book.CategoryId,
@@ -100,6 +112,7 @@ public class BooksController : ControllerBase
 
     // ============================================================
     // GET: api/Books
+    // GET ALL BOOKS
     // ============================================================
     [HttpGet]
     public async Task<IActionResult> GetAllBooks()
@@ -119,6 +132,9 @@ public class BooksController : ControllerBase
                     b.PublishedDate
                 ),
 
+                // NEW
+                CoverUrl = b.CoverUrl,
+
                 TotalCopies = b.TotalCopies,
                 AvailableCopies = b.AvailableCopies,
                 CategoryId = b.CategoryId,
@@ -136,119 +152,171 @@ public class BooksController : ControllerBase
 
 
     // ============================================================
-    // GET: api/Books/search?title=Clean
-    // ============================================================
-    [HttpGet("search")]
-    public async Task<IActionResult> SearchBooks(string title)
-    {
-        var books = await _context.Books
-            .Include(b => b.Category)
-            .Where(b =>
-                b.Title.ToLower().Contains(title.ToLower())
-            )
-            .Select(b => new
-            {
-                b.BookId,
-                b.Title,
-                b.ISBN,
-                Category = b.Category!.CategoryName,
-                b.AvailableCopies
-            })
-            .ToListAsync();
-
-        return Ok(books);
-    }
-
-
-    // ============================================================
-    // GET: api/Books/category/{categoryName}
-    // ============================================================
-    [HttpGet("category/{categoryName}")]
-    public async Task<IActionResult> SearchBooksByCategory(
-        string categoryName)
-    {
-        var books = await _context.Books
-            .Include(b => b.Category)
-            .Where(b =>
-                b.Category!.CategoryName.ToLower()
-                    == categoryName.ToLower()
-            )
-            .Select(b => new BookDto
-            {
-                BookId = b.BookId,
-                Title = b.Title,
-                ISBN = b.ISBN,
-                Description = b.Description,
-
-                PublishedDate = DateOnly.FromDateTime(
-                    b.PublishedDate
-                ),
-
-                TotalCopies = b.TotalCopies,
-                AvailableCopies = b.AvailableCopies,
-                CategoryId = b.CategoryId,
-                CategoryName = b.Category!.CategoryName
-            })
-            .ToListAsync();
-
-        if (!books.Any())
+// GET: api/Books/search?title=Clean
+// SEARCH BOOKS BY TITLE
+// ============================================================
+[HttpGet("search")]
+public async Task<IActionResult> SearchBooks(string title)
+{
+    var books = await _context.Books
+        .Include(b => b.Category)
+        .Include(b => b.BookAuthors)
+            .ThenInclude(ba => ba.Author)
+        .Where(b =>
+            b.Title.ToLower()
+                .Contains(title.ToLower())
+        )
+        .Select(b => new
         {
-            return NotFound(
-                "No books found in this category."
-            );
-        }
+            b.BookId,
+            b.Title,
+            b.ISBN,
 
-        return Ok(books);
-    }
+            b.Description,
+            b.CoverUrl,
 
+            Category = b.Category!.CategoryName,
 
-    // ============================================================
-    // GET: api/Books/author/{authorName}
-    // ============================================================
-    [HttpGet("author/{authorName}")]
-    public async Task<IActionResult> SearchBooksByAuthor(
-        string authorName)
+            // Get author name
+            AuthorName = b.BookAuthors
+                .Select(ba => ba.Author!.Name)
+                .FirstOrDefault() ?? "Unknown",
+
+            b.AvailableCopies
+        })
+        .ToListAsync();
+
+    return Ok(books);
+}
+// ============================================================
+// GET: api/Books/category/{categoryName}
+// SEARCH BOOKS BY CATEGORY
+// PARTIAL CATEGORY NAME MATCH
+// ============================================================
+[HttpGet("category/{categoryName}")]
+public async Task<IActionResult> SearchBooksByCategory(
+    string categoryName)
+{
+    if (string.IsNullOrWhiteSpace(categoryName))
     {
-        var books = await _context.BookAuthors
-            .Include(ba => ba.Book)
-                .ThenInclude(b => b.Category)
-            .Include(ba => ba.Author)
-            .Where(ba =>
-                ba.Author!.Name.ToLower()
-                    .Contains(authorName.ToLower())
-            )
-            .Select(ba => new BookDto
-            {
-                BookId = ba.Book!.BookId,
-                Title = ba.Book.Title,
-                ISBN = ba.Book.ISBN,
-                Description = ba.Book.Description,
-
-                PublishedDate = DateOnly.FromDateTime(
-                    ba.Book.PublishedDate
-                ),
-
-                TotalCopies = ba.Book.TotalCopies,
-                AvailableCopies = ba.Book.AvailableCopies,
-                CategoryId = ba.Book.CategoryId,
-                CategoryName = ba.Book.Category!.CategoryName
-            })
-            .Distinct()
-            .ToListAsync();
-
-        if (!books.Any())
-        {
-            return NotFound(
-                "No books found for this author."
-            );
-        }
-
-        return Ok(books);
+        return BadRequest("Category name is required.");
     }
+
+    categoryName = categoryName.Trim();
+
+    var books = await _context.Books
+        .Include(b => b.Category)
+        .Include(b => b.BookAuthors)
+            .ThenInclude(ba => ba.Author)
+        .Where(b =>
+            b.Category != null &&
+            b.Category.CategoryName.ToLower()
+                .Contains(categoryName.ToLower())
+        )
+        .Select(b => new BookDto
+        {
+            BookId = b.BookId,
+            Title = b.Title,
+            ISBN = b.ISBN,
+            Description = b.Description,
+
+            PublishedDate = DateOnly.FromDateTime(
+                b.PublishedDate
+            ),
+
+            CoverUrl = b.CoverUrl,
+
+            TotalCopies = b.TotalCopies,
+            AvailableCopies = b.AvailableCopies,
+
+            CategoryId = b.CategoryId,
+
+            CategoryName = b.Category!.CategoryName,
+
+            AuthorName = b.BookAuthors
+                .Select(ba => ba.Author!.Name)
+                .FirstOrDefault() ?? "Unknown"
+        })
+        .ToListAsync();
+
+    if (!books.Any())
+    {
+        return NotFound(
+            "No books found in this category."
+        );
+    }
+
+    return Ok(books);
+}
+    // ============================================================
+// GET: api/Books/author/{authorName}
+// SEARCH BOOKS BY AUTHOR
+// PARTIAL AUTHOR NAME MATCH
+// ============================================================
+[HttpGet("author/{authorName}")]
+public async Task<IActionResult> SearchBooksByAuthor(
+    string authorName)
+{
+    if (string.IsNullOrWhiteSpace(authorName))
+    {
+        return BadRequest("Author name is required.");
+    }
+
+    authorName = authorName.Trim();
+
+    var books = await _context.BookAuthors
+        .Include(ba => ba.Book)
+            .ThenInclude(b => b.Category)
+        .Include(ba => ba.Author)
+        .Where(ba =>
+            ba.Author != null &&
+            ba.Author.Name.ToLower()
+                .Contains(authorName.ToLower())
+        )
+        .Select(ba => new BookDto
+        {
+            BookId = ba.Book!.BookId,
+
+            Title = ba.Book.Title,
+
+            ISBN = ba.Book.ISBN,
+
+            Description = ba.Book.Description,
+
+            PublishedDate = DateOnly.FromDateTime(
+                ba.Book.PublishedDate
+            ),
+
+            CoverUrl = ba.Book.CoverUrl,
+
+            TotalCopies = ba.Book.TotalCopies,
+
+            AvailableCopies = ba.Book.AvailableCopies,
+
+            CategoryId = ba.Book.CategoryId,
+
+            CategoryName = ba.Book.Category!.CategoryName,
+
+            // FIXED: return the actual author name
+            AuthorName = ba.Author!.Name
+        })
+        .Distinct()
+        .ToListAsync();
+
+    if (!books.Any())
+    {
+        return NotFound(
+            "No books found for this author."
+        );
+    }
+
+    return Ok(books);
+}
 
 
     // ============================================================
     // GET: api/Books/{id}
+    // GET BOOK BY ID
     // ============================================================
     [HttpGet("{id}")]
     public async Task<IActionResult> GetBookById(int id)
@@ -281,6 +349,9 @@ public class BooksController : ControllerBase
                 book.PublishedDate
             ),
 
+            // NEW
+            CoverUrl = book.CoverUrl,
+
             TotalCopies = book.TotalCopies,
             AvailableCopies = book.AvailableCopies,
             CategoryId = book.CategoryId,
@@ -294,9 +365,11 @@ public class BooksController : ControllerBase
 
     // ============================================================
     // PUT: api/Books/{id}
+    // UPDATE BOOK
     // ============================================================
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateBook(
+    [Authorize(Roles = "Admin")]
+[HttpPut("{id}")]
+public async Task<IActionResult> UpdateBook(
         int id,
         UpdateBookDto dto)
     {
@@ -383,6 +456,9 @@ public class BooksController : ControllerBase
             DateTimeKind.Utc
         );
 
+        // NEW: Update cover URL
+        book.CoverUrl = dto.CoverUrl;
+
         book.TotalCopies = dto.TotalCopies;
 
         // Keep borrowed copies unchanged
@@ -449,7 +525,7 @@ public class BooksController : ControllerBase
 
 
         // --------------------------------------------------------
-        // Return a safe response object.
+        // Return safe response object.
         //
         // Do NOT return the EF Book entity directly because
         // Book -> BookAuthors -> Book -> BookAuthors can create
@@ -462,6 +538,10 @@ public class BooksController : ControllerBase
             book.ISBN,
             book.Description,
             book.PublishedDate,
+
+            // NEW
+            book.CoverUrl,
+
             book.TotalCopies,
             book.AvailableCopies,
             book.CategoryId,
@@ -472,9 +552,11 @@ public class BooksController : ControllerBase
 
     // ============================================================
     // DELETE: api/Books/{id}
+    // DELETE BOOK
     // ============================================================
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteBook(int id)
+   [Authorize(Roles = "Admin")]
+[HttpDelete("{id}")]
+public async Task<IActionResult> DeleteBook(int id)
     {
         // --------------------------------------------------------
         // Find book
