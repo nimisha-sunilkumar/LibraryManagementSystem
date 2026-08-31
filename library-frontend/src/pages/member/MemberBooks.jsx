@@ -11,13 +11,6 @@ function MemberBooks() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const [selectedBook, setSelectedBook] = useState(null)
-  const [dueDate, setDueDate] = useState('')
-  const [borrowing, setBorrowing] = useState(false)
-
-  const [borrowMessage, setBorrowMessage] = useState('')
-  const [borrowError, setBorrowError] = useState('')
-
 
   // ============================================================
   // GET BOOKS
@@ -53,8 +46,13 @@ function MemberBooks() {
       setLoading(false)
 
     }
+
   }
 
+
+  // ============================================================
+  // LOAD BOOKS
+  // ============================================================
 
   useEffect(() => {
 
@@ -69,9 +67,8 @@ function MemberBooks() {
 
   const filteredBooks = books.filter(book => {
 
-    const searchText = search
-      .toLowerCase()
-      .trim()
+    const searchText =
+      search.toLowerCase().trim()
 
     if (!searchText) {
       return true
@@ -100,233 +97,6 @@ function MemberBooks() {
 
 
   // ============================================================
-  // OPEN BORROW FORM
-  // ============================================================
-
-  const handleBorrowClick = (book) => {
-
-    setSelectedBook(book)
-
-    setDueDate('')
-
-    setBorrowMessage('')
-    setBorrowError('')
-
-  }
-
-
-  // ============================================================
-  // CLOSE BORROW FORM
-  // ============================================================
-
-  const closeBorrowForm = () => {
-
-    setSelectedBook(null)
-
-    setDueDate('')
-
-    setBorrowMessage('')
-    setBorrowError('')
-
-  }
-
-
-  // ============================================================
-  // BORROW BOOK
-  // ============================================================
-
-  const handleBorrowBook = async (event) => {
-
-    event.preventDefault()
-
-    setBorrowMessage('')
-    setBorrowError('')
-
-
-    if (!selectedBook) {
-      return
-    }
-
-
-    if (!dueDate) {
-
-      setBorrowError(
-        'Please select a due date.'
-      )
-
-      return
-
-    }
-
-
-    // ----------------------------------------------------------
-    // Borrow date = today
-    // ----------------------------------------------------------
-
-    const today =
-      new Date().toISOString().split('T')[0]
-
-
-    // ----------------------------------------------------------
-    // Due date cannot be before today
-    // ----------------------------------------------------------
-
-    if (dueDate < today) {
-
-      setBorrowError(
-        'Due date cannot be before today.'
-      )
-
-      return
-
-    }
-
-
-    const token =
-      localStorage.getItem('token')
-
-
-    if (!token) {
-
-      setBorrowError(
-        'Please login before borrowing a book.'
-      )
-
-      return
-
-    }
-
-
-    try {
-
-      setBorrowing(true)
-
-
-      // ========================================================
-      // POST BORROW
-      //
-      // IMPORTANT:
-      // We do NOT send MemberId.
-      //
-      // The backend gets MemberId from the JWT.
-      // ========================================================
-
-      const response = await fetch(
-        `${API_URL}/api/Borrows`,
-        {
-          method: 'POST',
-
-          headers: {
-
-            'Content-Type':
-              'application/json',
-
-            'Authorization':
-              `Bearer ${token}`
-
-          },
-
-          body: JSON.stringify({
-
-            bookId:
-              selectedBook.bookId,
-
-            borrowDate:
-              today,
-
-            dueDate:
-              dueDate
-
-          })
-
-        }
-      )
-
-
-      const responseText =
-        await response.text()
-
-
-      let data
-
-      try {
-
-        data =
-          JSON.parse(responseText)
-
-      } catch {
-
-        data =
-          responseText
-
-      }
-
-
-      if (!response.ok) {
-
-        throw new Error(
-
-          typeof data === 'string'
-            ? data
-            : data.message ||
-              'Unable to borrow the book.'
-
-        )
-
-      }
-
-
-      // ========================================================
-      // SUCCESS
-      // ========================================================
-
-      setBorrowMessage(
-        `You have successfully borrowed "${selectedBook.title}".`
-      )
-
-      setBorrowError('')
-
-
-      // Update available copies immediately
-      setBooks(previousBooks =>
-        previousBooks.map(book =>
-          book.bookId === selectedBook.bookId
-            ? {
-                ...book,
-                availableCopies:
-                  book.availableCopies - 1
-              }
-            : book
-        )
-      )
-
-
-      setSelectedBook(null)
-      setDueDate('')
-
-
-    } catch (error) {
-
-      console.error(
-        'Error borrowing book:',
-        error
-      )
-
-      setBorrowError(
-        error.message ||
-        'Something went wrong while borrowing the book.'
-      )
-
-    } finally {
-
-      setBorrowing(false)
-
-    }
-
-  }
-
-
-  // ============================================================
   // LOADING
   // ============================================================
 
@@ -336,7 +106,9 @@ function MemberBooks() {
 
       <div className="member-books-page">
 
-        <h1>Library Books</h1>
+        <h1>
+          Library Books
+        </h1>
 
         <p>
           Loading books...
@@ -359,7 +131,9 @@ function MemberBooks() {
 
       <div className="member-books-page">
 
-        <h1>Library Books</h1>
+        <h1>
+          Library Books
+        </h1>
 
         <p className="auth-error">
           {error}
@@ -380,6 +154,7 @@ function MemberBooks() {
 
     <div className="member-books-page">
 
+
       {/* ======================================================
           HEADER
       ======================================================= */}
@@ -397,50 +172,20 @@ function MemberBooks() {
           </h1>
 
           <span>
-            Find a book and borrow it from the library.
+            Find a book and view its details before borrowing.
           </span>
 
         </div>
 
 
-       <Link
-  to="/member/borrowed"
-  className="primary-button"
->
-  My Borrowed Books
-</Link>
+        <Link
+          to="/member/borrowed"
+          className="primary-button"
+        >
+          My Borrowed Books
+        </Link>
 
       </div>
-
-
-      {/* ======================================================
-          SUCCESS MESSAGE
-      ======================================================= */}
-
-      {borrowMessage && (
-
-        <div className="borrow-success">
-
-          ✓ {borrowMessage}
-
-        </div>
-
-      )}
-
-
-      {/* ======================================================
-          ERROR MESSAGE
-      ======================================================= */}
-
-      {borrowError && !selectedBook && (
-
-        <div className="auth-error">
-
-          {borrowError}
-
-        </div>
-
-      )}
 
 
       {/* ======================================================
@@ -490,7 +235,10 @@ function MemberBooks() {
               key={book.bookId}
             >
 
-              {/* COVER */}
+
+              {/* ==================================================
+                  COVER
+              ================================================== */}
 
               <div className="member-book-cover">
 
@@ -512,9 +260,14 @@ function MemberBooks() {
               </div>
 
 
-              {/* INFORMATION */}
+              {/* ==================================================
+                  INFORMATION
+              ================================================== */}
 
               <div className="member-book-info">
+
+
+                {/* CATEGORY */}
 
                 <p className="book-category">
 
@@ -525,10 +278,14 @@ function MemberBooks() {
                 </p>
 
 
+                {/* TITLE */}
+
                 <h2>
                   {book.title}
                 </h2>
 
+
+                {/* AUTHOR */}
 
                 <p className="book-author">
 
@@ -538,6 +295,8 @@ function MemberBooks() {
                 </p>
 
 
+                {/* DESCRIPTION */}
+
                 <p className="book-description">
 
                   {book.description ||
@@ -546,7 +305,9 @@ function MemberBooks() {
                 </p>
 
 
-                {/* AVAILABILITY */}
+                {/* =================================================
+                    AVAILABILITY
+                ================================================== */}
 
                 {book.availableCopies > 0 ? (
 
@@ -569,7 +330,9 @@ function MemberBooks() {
                 )}
 
 
-                {/* ACTIONS */}
+                {/* =================================================
+                    ACTION
+                ================================================== */}
 
                 <div className="member-book-actions">
 
@@ -579,21 +342,6 @@ function MemberBooks() {
                   >
                     View Details
                   </Link>
-
-
-                  {book.availableCopies > 0 && (
-
-                    <button
-                      type="button"
-                      className="primary-button"
-                      onClick={() =>
-                        handleBorrowClick(book)
-                      }
-                    >
-                      Borrow Book
-                    </button>
-
-                  )}
 
                 </div>
 
@@ -607,139 +355,10 @@ function MemberBooks() {
 
       )}
 
-
-      {/* ======================================================
-          BORROW MODAL
-      ======================================================= */}
-
-      {selectedBook && (
-
-        <div className="borrow-modal-overlay">
-
-          <div className="borrow-modal">
-
-            <h2>
-              Borrow Book
-            </h2>
-
-
-            <p>
-
-              You are borrowing:
-
-            </p>
-
-
-            <h3>
-              {selectedBook.title}
-            </h3>
-
-
-            <p>
-
-              Available copies:
-              {' '}
-              {selectedBook.availableCopies}
-
-            </p>
-
-
-            <form
-              onSubmit={handleBorrowBook}
-            >
-
-              <div className="form-group">
-
-                <label>
-                  Borrow Date
-                </label>
-
-                <input
-                  type="date"
-                  value={
-                    new Date()
-                      .toISOString()
-                      .split('T')[0]
-                  }
-                  readOnly
-                />
-
-              </div>
-
-
-              <div className="form-group">
-
-                <label>
-                  Due Date
-                </label>
-
-                <input
-                  type="date"
-                  value={dueDate}
-                  min={
-                    new Date()
-                      .toISOString()
-                      .split('T')[0]
-                  }
-                  onChange={event =>
-                    setDueDate(
-                      event.target.value
-                    )
-                  }
-                  required
-                />
-
-              </div>
-
-
-              {borrowError && (
-
-                <div className="auth-error">
-
-                  {borrowError}
-
-                </div>
-
-              )}
-
-
-              <div className="form-actions">
-
-                <button
-                  type="button"
-                  className="secondary-button"
-                  onClick={closeBorrowForm}
-                  disabled={borrowing}
-                >
-                  Cancel
-                </button>
-
-
-                <button
-                  type="submit"
-                  className="primary-button"
-                  disabled={borrowing}
-                >
-
-                  {borrowing
-                    ? 'Borrowing...'
-                    : 'Confirm Borrow'}
-
-                </button>
-
-              </div>
-
-            </form>
-
-          </div>
-
-        </div>
-
-      )}
-
     </div>
 
   )
+
 }
 
 export default MemberBooks

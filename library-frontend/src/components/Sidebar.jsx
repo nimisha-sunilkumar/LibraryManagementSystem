@@ -56,6 +56,8 @@ function Sidebar() {
         {isAdmin && (
           <>
 
+            {/* DASHBOARD */}
+
             <li>
               <NavLink to="/admin/dashboard">
 
@@ -68,6 +70,8 @@ function Sidebar() {
               </NavLink>
             </li>
 
+
+            {/* BOOKS */}
 
             <li>
               <NavLink to="/admin/books">
@@ -82,6 +86,8 @@ function Sidebar() {
             </li>
 
 
+            {/* AUTHORS */}
+
             <li>
               <NavLink to="/admin/authors">
 
@@ -94,6 +100,8 @@ function Sidebar() {
               </NavLink>
             </li>
 
+
+            {/* CATEGORIES */}
 
             <li>
               <NavLink to="/admin/categories">
@@ -108,6 +116,8 @@ function Sidebar() {
             </li>
 
 
+            {/* MEMBERS */}
+
             <li>
               <NavLink to="/admin/members">
 
@@ -121,6 +131,8 @@ function Sidebar() {
             </li>
 
 
+            {/* BORROW & RETURN */}
+
             <li>
               <NavLink to="/admin/borrow">
 
@@ -133,12 +145,31 @@ function Sidebar() {
               </NavLink>
             </li>
 
+
+            {/* ==================================================
+                MESSAGES
+            ================================================== */}
+
+            <li>
+              <NavLink to="/admin/messages">
+
+                <span className="menu-icon">
+                  💬
+                </span>
+
+                Messages
+
+              </NavLink>
+            </li>
+
           </>
         )}
 
 
         {!isAdmin && (
           <>
+
+            {/* MEMBER DASHBOARD */}
 
             <li>
               <NavLink to="/member/dashboard">
@@ -153,6 +184,8 @@ function Sidebar() {
             </li>
 
 
+            {/* MEMBER BOOKS */}
+
             <li>
               <NavLink to="/member/books">
 
@@ -166,6 +199,8 @@ function Sidebar() {
             </li>
 
 
+            {/* MY BORROWED BOOKS */}
+
             <li>
               <NavLink to="/member/borrowed">
 
@@ -178,6 +213,8 @@ function Sidebar() {
               </NavLink>
             </li>
 
+
+            {/* MY PROFILE */}
 
             <li>
               <NavLink to="/member/profile">

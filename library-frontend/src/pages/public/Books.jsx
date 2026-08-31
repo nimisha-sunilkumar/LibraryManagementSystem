@@ -1,114 +1,238 @@
 import { useEffect, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+
+const API_URL = import.meta.env.VITE_API_URL
 
 function Books() {
+
   const [books, setBooks] = useState([])
   const [searchText, setSearchText] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  // Read category from URL
+  const [searchParams] = useSearchParams()
+
+  const selectedCategory =
+    searchParams.get('category') || ''
+
+
   // ============================================================
   // GET ALL BOOKS
   // ============================================================
+
   useEffect(() => {
-    fetch('http://localhost:5000/api/Books')
+
+    setLoading(true)
+    setError('')
+
+    fetch(`${API_URL}/api/Books`)
+
       .then(response => {
+
         if (!response.ok) {
-          throw new Error('Failed to load books.')
+          throw new Error(
+            'Failed to load books.'
+          )
         }
 
         return response.json()
+
       })
+
       .then(data => {
+
         setBooks(data)
         setLoading(false)
+
       })
+
       .catch(error => {
+
         console.error(error)
-        setError('Unable to load books.')
+
+        setError(
+          'Unable to load books.'
+        )
+
         setLoading(false)
+
       })
+
   }, [])
 
 
   // ============================================================
-  // SEARCH
-  // Searches title, author and category
+  // FILTER BOOKS
+  //
+  // Category from URL + search box
   // ============================================================
+
   const filteredBooks = books.filter(book => {
-    const search = searchText.toLowerCase().trim()
+
+    const search =
+      searchText
+        .toLowerCase()
+        .trim()
+
+    const title =
+      (book.title || '')
+        .toLowerCase()
+
+    const author =
+      (book.authorName || '')
+        .toLowerCase()
+
+    const category =
+      (book.categoryName || '')
+        .toLowerCase()
+
+
+    // ----------------------------------------------------------
+    // CATEGORY FILTER
+    // ----------------------------------------------------------
+
+    if (
+      selectedCategory &&
+      category !== selectedCategory.toLowerCase()
+    ) {
+      return false
+    }
+
+
+    // ----------------------------------------------------------
+    // SEARCH FILTER
+    // ----------------------------------------------------------
 
     if (!search) {
       return true
     }
 
-    const title = (book.title || '').toLowerCase()
-    const author = (book.authorName || '').toLowerCase()
-    const category = (book.categoryName || '').toLowerCase()
 
     return (
       title.includes(search) ||
       author.includes(search) ||
       category.includes(search)
     )
+
   })
 
 
   // ============================================================
   // LOADING
   // ============================================================
+
   if (loading) {
+
     return (
+
       <div className="public-books-page">
-        <h1>Books</h1>
-        <p>Loading books...</p>
+
+        <h1>
+          Books
+        </h1>
+
+        <p>
+          Loading books...
+        </p>
+
       </div>
+
     )
+
   }
 
 
   // ============================================================
   // ERROR
   // ============================================================
+
   if (error) {
+
     return (
+
       <div className="public-books-page">
-        <h1>Books</h1>
+
+        <h1>
+          Books
+        </h1>
+
         <p className="public-books-error">
           {error}
         </p>
+
       </div>
+
     )
+
   }
 
 
   // ============================================================
   // PAGE
   // ============================================================
+
   return (
+
     <div className="public-books-page">
+
 
       {/* ======================================================
           PAGE HEADER
       ======================================================= */}
+
       <section className="public-books-header">
 
         <p className="public-books-label">
           OUR COLLECTION
         </p>
 
-        <h1>Explore Our Books</h1>
+        <h1>
+          {selectedCategory
+            ? `${selectedCategory} Books`
+            : 'Explore Our Books'}
+        </h1>
 
         <p>
-          Discover books from different authors,
-          categories and subjects.
+
+          {selectedCategory
+            ? `Explore books available in the ${selectedCategory} category.`
+            : 'Discover books from different authors, categories and subjects.'}
+
         </p>
 
       </section>
 
 
       {/* ======================================================
+          CATEGORY INDICATOR
+      ======================================================= */}
+
+      {selectedCategory && (
+
+        <div className="selected-category">
+
+          <span>
+            Category:
+          </span>
+
+          <strong>
+            {selectedCategory}
+          </strong>
+
+          <Link to="/books">
+            View All Books
+          </Link>
+
+        </div>
+
+      )}
+
+
+      {/* ======================================================
           SEARCH
       ======================================================= */}
+
       <div className="public-books-search">
 
         <input
@@ -116,7 +240,9 @@ function Books() {
           placeholder="Search by title, author or category..."
           value={searchText}
           onChange={event =>
-            setSearchText(event.target.value)
+            setSearchText(
+              event.target.value
+            )
           }
         />
 
@@ -126,10 +252,13 @@ function Books() {
       {/* ======================================================
           BOOK COUNT
       ======================================================= */}
+
       <div className="public-books-count">
 
         {filteredBooks.length} book
-        {filteredBooks.length !== 1 ? 's' : ''} found
+        {filteredBooks.length !== 1
+          ? 's'
+          : ''} found
 
       </div>
 
@@ -137,16 +266,33 @@ function Books() {
       {/* ======================================================
           BOOK GRID
       ======================================================= */}
+
       {filteredBooks.length === 0 ? (
 
         <div className="no-public-books">
 
-          <h2>No books found</h2>
+          <h2>
+            No books found
+          </h2>
 
           <p>
-            Try searching with another title, author
-            or category.
+
+            {selectedCategory
+              ? `There are currently no books in the ${selectedCategory} category.`
+              : 'Try searching with another title, author or category.'}
+
           </p>
+
+          {selectedCategory && (
+
+            <Link
+              to="/books"
+              className="view-book-button"
+            >
+              View All Books
+            </Link>
+
+          )}
 
         </div>
 
@@ -161,7 +307,11 @@ function Books() {
               key={book.bookId}
             >
 
-              {/* BOOK COVER */}
+
+              {/* =================================================
+                  BOOK COVER
+              ================================================= */}
+
               <div className="public-book-cover">
 
                 {book.coverUrl ? (
@@ -182,25 +332,45 @@ function Books() {
               </div>
 
 
-              {/* BOOK INFORMATION */}
+              {/* =================================================
+                  BOOK INFORMATION
+              ================================================= */}
+
               <div className="public-book-info">
 
-                <h2>{book.title}</h2>
+                <h2>
+                  {book.title}
+                </h2>
+
 
                 <p className="public-book-author">
-                  {book.authorName || 'Unknown Author'}
+
+                  {book.authorName ||
+                    'Unknown Author'}
+
                 </p>
+
 
                 <p className="public-book-category">
-                  {book.categoryName || 'Unknown Category'}
+
+                  {book.categoryName ||
+                    'Unknown Category'}
+
                 </p>
+
 
                 <p className="public-book-description">
-                  {book.description}
+
+                  {book.description ||
+                    'No description available.'}
+
                 </p>
 
 
-                {/* AVAILABILITY */}
+                {/* =================================================
+                    AVAILABILITY
+                ================================================= */}
+
                 <div className="public-book-availability">
 
                   {book.availableCopies > 0 ? (
@@ -220,13 +390,16 @@ function Books() {
                 </div>
 
 
-                {/* DETAILS BUTTON */}
-                <a
-                  href={`/books/${book.bookId}`}
+                {/* =================================================
+                    DETAILS BUTTON
+                ================================================= */}
+
+                <Link
+                  to={`/books/${book.bookId}`}
                   className="view-book-button"
                 >
                   View Details
-                </a>
+                </Link>
 
               </div>
 
@@ -239,7 +412,9 @@ function Books() {
       )}
 
     </div>
+
   )
+
 }
 
 export default Books

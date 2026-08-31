@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
+
 function Login() {
 
   const navigate = useNavigate()
@@ -13,17 +14,23 @@ function Login() {
   const [loading, setLoading] = useState(false)
 
 
+  // ============================================================
+  // LOGIN
+  // ============================================================
+
   const handleSubmit = async (event) => {
 
     event.preventDefault()
 
     setError('')
+    setLoading(true)
 
 
     try {
 
-      setLoading(true)
-
+      // ========================================================
+      // LOGIN API
+      // ========================================================
 
       const response = await fetch(
         'http://localhost:5000/api/Auth/login',
@@ -42,51 +49,111 @@ function Login() {
       )
 
 
-     const responseText = await response.text()
+      // ========================================================
+      // READ RESPONSE
+      // ========================================================
 
-let data
+      const responseText = await response.text()
 
-try {
-  data = JSON.parse(responseText)
-} catch {
-  data = responseText
-}
-console.log('LOGIN RESPONSE:', data) 
+      let data
 
-if (!response.ok) {
-  throw new Error(
-    typeof data === 'string'
-      ? data
-      : data.message || 'Login failed.'
-  )
-}
+      try {
+
+        data = JSON.parse(responseText)
+
+      } catch {
+
+        data = responseText
+
+      }
+
+      console.log(
+        'LOGIN RESPONSE:',
+        data
+      )
 
 
-      // ============================================================
+      // ========================================================
+      // LOGIN FAILED
+      // ========================================================
+
+      if (!response.ok) {
+
+        throw new Error(
+          typeof data === 'string'
+            ? data
+            : data.message || 'Login failed.'
+        )
+
+      }
+
+
+      // ========================================================
+      // CHECK TOKEN
+      // ========================================================
+
+      if (!data.token) {
+
+        throw new Error(
+          'Login succeeded, but no authentication token was received.'
+        )
+
+      }
+
+
+      // ========================================================
+      // CLEAR OLD LOGIN INFORMATION
+      // ========================================================
+
+      // IMPORTANT:
+      // We also remove the old "user" object.
+      // This prevents an old member/admin user from
+      // affecting the new login after refresh.
+
+      localStorage.removeItem('token')
+      localStorage.removeItem('userId')
+      localStorage.removeItem('email')
+      localStorage.removeItem('role')
+      localStorage.removeItem('memberId')
+      localStorage.removeItem('user')
+
+
+      // ========================================================
       // SAVE LOGIN INFORMATION
-      // ============================================================
+      // ========================================================
 
       localStorage.setItem(
         'token',
         data.token
       )
 
+
       localStorage.setItem(
         'userId',
         data.userId
       )
+
 
       localStorage.setItem(
         'email',
         data.email
       )
 
+
       localStorage.setItem(
         'role',
         data.role
       )
 
-      if (data.memberId) {
+
+      // ========================================================
+      // SAVE MEMBER ID
+      // ========================================================
+
+      if (
+        data.role === 'User' &&
+        data.memberId
+      ) {
 
         localStorage.setItem(
           'memberId',
@@ -96,31 +163,135 @@ if (!response.ok) {
       }
 
 
-      // ============================================================
+      // ========================================================
+      // SAVE COMPLETE USER OBJECT
+      // ========================================================
+
+      // This is important for Navbar / Sidebar
+      // and for restoring login information after refresh.
+
+      const loggedInUser = {
+
+        userId: data.userId,
+
+        email: data.email,
+
+        role: data.role,
+
+        memberId: data.memberId || null,
+
+        fullName: data.fullName || ''
+
+      }
+
+
+      localStorage.setItem(
+        'user',
+        JSON.stringify(loggedInUser)
+      )
+
+
+      // ========================================================
+      // DEBUG INFORMATION
+      // ========================================================
+
+      console.log(
+        'LOGIN USER:',
+        loggedInUser
+      )
+
+      console.log(
+        'TOKEN:',
+        localStorage.getItem('token')
+      )
+
+      console.log(
+        'USER ID:',
+        localStorage.getItem('userId')
+      )
+
+      console.log(
+        'EMAIL:',
+        localStorage.getItem('email')
+      )
+
+      console.log(
+        'ROLE:',
+        localStorage.getItem('role')
+      )
+
+      console.log(
+        'MEMBER ID:',
+        localStorage.getItem('memberId')
+      )
+
+      console.log(
+        'USER OBJECT:',
+        localStorage.getItem('user')
+      )
+
+
+      // ========================================================
       // REDIRECT BASED ON ROLE
-      // ============================================================
+      // ========================================================
 
-      if (data.role === 'Admin') {
+      if (
+        data.role?.toLowerCase() === 'admin'
+      ) {
 
-  navigate('/admin/dashboard')
+        navigate(
+          '/admin/dashboard',
+          {
+            replace: true
+          }
+        )
 
-} else {
+      }
 
-  const returnPath =
-    location.state?.from || '/member/dashboard'
+      else if (
+        data.role?.toLowerCase() === 'user'
+      ) {
 
-  navigate(returnPath)
+        const returnPath =
+          location.state?.from ||
+          '/member/dashboard'
 
-}
+        navigate(
+          returnPath,
+          {
+            replace: true
+          }
+        )
+
+      }
+
+      else {
+
+        throw new Error(
+          'Unknown user role received from server.'
+        )
+
+      }
+
+    }
 
 
-    } catch (error) {
+    catch (error) {
 
-      console.error(error)
+      console.error(
+        'Login error:',
+        error
+      )
 
-      setError(error.message)
+      setError(
+        error.message ||
+        'Unable to login.'
+      )
 
-    } finally {
+    }
+
+
+    finally {
 
       setLoading(false)
 
@@ -129,11 +300,19 @@ if (!response.ok) {
   }
 
 
+  // ============================================================
+  // LOGIN UI
+  // ============================================================
+
   return (
 
     <div className="auth-page">
 
       <div className="auth-card">
+
+        {/* ======================================================
+            HEADER
+        ====================================================== */}
 
         <div className="auth-header">
 
@@ -152,14 +331,28 @@ if (!response.ok) {
         </div>
 
 
+        {/* ======================================================
+            ERROR
+        ====================================================== */}
+
         {error && (
+
           <div className="auth-error">
             {error}
           </div>
+
         )}
 
 
+        {/* ======================================================
+            LOGIN FORM
+        ====================================================== */}
+
         <form onSubmit={handleSubmit}>
+
+          {/* ====================================================
+              EMAIL
+          ==================================================== */}
 
           <div className="form-group">
 
@@ -181,6 +374,10 @@ if (!response.ok) {
           </div>
 
 
+          {/* ====================================================
+              PASSWORD
+          ==================================================== */}
+
           <div className="form-group">
 
             <label htmlFor="password">
@@ -201,6 +398,10 @@ if (!response.ok) {
           </div>
 
 
+          {/* ====================================================
+              LOGIN BUTTON
+          ==================================================== */}
+
           <button
             type="submit"
             className="auth-button"
@@ -216,6 +417,10 @@ if (!response.ok) {
         </form>
 
 
+        {/* ======================================================
+            REGISTER
+        ====================================================== */}
+
         <div className="auth-footer">
 
           <p>
@@ -229,6 +434,10 @@ if (!response.ok) {
         </div>
 
 
+        {/* ======================================================
+            BACK HOME
+        ====================================================== */}
+
         <Link
           to="/"
           className="back-home"
@@ -241,6 +450,7 @@ if (!response.ok) {
     </div>
 
   )
+
 }
 
 export default Login

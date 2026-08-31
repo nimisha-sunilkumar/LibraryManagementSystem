@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 // ============================================================
 // COMMON COMPONENTS
@@ -18,6 +18,7 @@ import Authors from './components/Authors'
 import Categories from './components/Categories'
 import Members from './components/Members'
 import Borrow from './components/Borrow'
+import Messages from './components/Messages'
 
 // ============================================================
 // MEMBER COMPONENTS
@@ -28,6 +29,7 @@ import MemberBooks from './pages/member/MemberBooks'
 import MemberBorrow from './pages/member/MemberBorrow'
 import MyBorrows from './pages/member/MyBorrows'
 import MyProfile from './components/MyProfile'
+import MyMessages from './pages/member/MyMessages'
 
 // ============================================================
 // PUBLIC PAGES
@@ -51,6 +53,85 @@ import './App.css'
 
 
 // ============================================================
+// PROTECTED ROUTE
+// ============================================================
+
+function ProtectedRoute({ children, role }) {
+
+  const token = localStorage.getItem('token')
+  const userRole = localStorage.getItem('role')
+
+  // ------------------------------------------------------------
+  // No login information
+  // ------------------------------------------------------------
+
+  if (!token) {
+
+    return <Navigate to="/login" replace />
+
+  }
+
+
+  // ------------------------------------------------------------
+  // Check role
+  // ------------------------------------------------------------
+
+  if (
+    !userRole ||
+    userRole.toLowerCase() !== role.toLowerCase()
+  ) {
+
+    // If logged-in user is Admin
+    if (
+      userRole?.toLowerCase() === 'admin'
+    ) {
+
+      return (
+        <Navigate
+          to="/admin/dashboard"
+          replace
+        />
+      )
+
+    }
+
+
+    // If logged-in user is normal User
+    if (
+      userRole?.toLowerCase() === 'user'
+    ) {
+
+      return (
+        <Navigate
+          to="/member/dashboard"
+          replace
+        />
+      )
+
+    }
+
+
+    // Unknown / invalid role
+    return (
+      <Navigate
+        to="/login"
+        replace
+      />
+    )
+
+  }
+
+
+  // ------------------------------------------------------------
+  // Correct role
+  // ------------------------------------------------------------
+
+  return children
+
+}
+
+
+// ============================================================
 // ADMIN LAYOUT
 // ============================================================
 
@@ -70,34 +151,88 @@ function AdminLayout() {
 
           <Routes>
 
+            {/* ==================================================
+                ADMIN DASHBOARD
+            ================================================== */}
+
             <Route
-              path="admin/dashboard"
+              path="dashboard"
               element={<Dashboard />}
             />
 
+
+            {/* ==================================================
+                BOOKS
+            ================================================== */}
+
             <Route
-              path="admin/books"
+              path="books"
               element={<Books />}
             />
 
+
+            {/* ==================================================
+                AUTHORS
+            ================================================== */}
+
             <Route
-              path="admin/authors"
+              path="authors"
               element={<Authors />}
             />
 
+
+            {/* ==================================================
+                CATEGORIES
+            ================================================== */}
+
             <Route
-              path="admin/categories"
+              path="categories"
               element={<Categories />}
             />
 
+
+            {/* ==================================================
+                MEMBERS
+            ================================================== */}
+
             <Route
-              path="admin/members"
+              path="members"
               element={<Members />}
             />
 
+
+            {/* ==================================================
+                BORROW & RETURN
+            ================================================== */}
+
             <Route
-              path="admin/borrow"
+              path="borrow"
               element={<Borrow />}
+            />
+
+
+            {/* ==================================================
+                MESSAGES
+            ================================================== */}
+
+            <Route
+              path="messages"
+              element={<Messages />}
+            />
+
+
+            {/* ==================================================
+                DEFAULT ADMIN PAGE
+            ================================================== */}
+
+            <Route
+              path="*"
+              element={
+                <Navigate
+                  to="dashboard"
+                  replace
+                />
+              }
             />
 
           </Routes>
@@ -109,6 +244,7 @@ function AdminLayout() {
     </div>
 
   )
+
 }
 
 
@@ -173,12 +309,37 @@ function MemberLayout() {
 
 
             {/* ==================================================
+                MY MESSAGES
+            ================================================== */}
+
+            <Route
+              path="messages"
+              element={<MyMessages />}
+            />
+
+
+            {/* ==================================================
                 MEMBER PROFILE
             ================================================== */}
 
             <Route
               path="profile"
               element={<MyProfile />}
+            />
+
+
+            {/* ==================================================
+                DEFAULT MEMBER PAGE
+            ================================================== */}
+
+            <Route
+              path="*"
+              element={
+                <Navigate
+                  to="dashboard"
+                  replace
+                />
+              }
             />
 
           </Routes>
@@ -190,6 +351,7 @@ function MemberLayout() {
     </div>
 
   )
+
 }
 
 
@@ -261,7 +423,11 @@ function App() {
 
         <Route
           path="/member/*"
-          element={<MemberLayout />}
+          element={
+            <ProtectedRoute role="User">
+              <MemberLayout />
+            </ProtectedRoute>
+          }
         />
 
 
@@ -270,8 +436,27 @@ function App() {
         ================================================== */}
 
         <Route
-          path="/*"
-          element={<AdminLayout />}
+          path="/admin/*"
+          element={
+            <ProtectedRoute role="Admin">
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        />
+
+
+        {/* ==================================================
+            UNKNOWN URL
+        ================================================== */}
+
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to="/"
+              replace
+            />
+          }
         />
 
       </Routes>
@@ -279,6 +464,7 @@ function App() {
     </BrowserRouter>
 
   )
+
 }
 
 export default App

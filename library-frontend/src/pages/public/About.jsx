@@ -1,26 +1,36 @@
 function About() {
   return (
-    <div className="public-page">
+    <div className="public-page about-page">
 
-      <section className="public-page-header">
+      {/* HERO */}
+      <section className="public-page-header about-header">
 
         <p>ABOUT OUR LIBRARY</p>
 
         <h1>About Us</h1>
 
-        <p>
+        <span>
           A place for readers, learners and explorers.
-        </p>
+        </span>
 
       </section>
 
 
-      <section className="about-content">
+      {/* INTRO */}
+      <section className="about-intro">
 
-        <div className="about-section">
+        <div className="about-intro-icon">
+          📚
+        </div>
+
+        <div>
+
+          <p className="about-label">
+            OUR LIBRARY
+          </p>
 
           <h2>
-            Our Library
+            Bringing books and readers together.
           </h2>
 
           <p>
@@ -37,8 +47,76 @@ function About() {
 
         </div>
 
+      </section>
 
-        <div className="about-section">
+
+      {/* FEATURES */}
+      <section className="about-features">
+
+        <div className="about-feature-card">
+
+          <div className="about-feature-icon">
+            🔎
+          </div>
+
+          <h3>
+            Discover
+          </h3>
+
+          <p>
+            Explore books across different categories and
+            discover something new to read.
+          </p>
+
+        </div>
+
+
+        <div className="about-feature-card">
+
+          <div className="about-feature-icon">
+            📖
+          </div>
+
+          <h3>
+            Learn
+          </h3>
+
+          <p>
+            Find books covering different subjects, interests
+            and areas of knowledge.
+          </p>
+
+        </div>
+
+
+        <div className="about-feature-card">
+
+          <div className="about-feature-icon">
+            🤝
+          </div>
+
+          <h3>
+            Connect
+          </h3>
+
+          <p>
+            Enjoy a welcoming digital library experience built
+            around readers and their interests.
+          </p>
+
+        </div>
+
+      </section>
+
+
+      {/* WHAT WE OFFER + GOAL */}
+      <section className="about-details">
+
+        <div className="about-detail-card">
+
+          <span className="about-detail-number">
+            01
+          </span>
 
           <h2>
             What We Offer
@@ -53,7 +131,11 @@ function About() {
         </div>
 
 
-        <div className="about-section">
+        <div className="about-detail-card">
+
+          <span className="about-detail-number">
+            02
+          </span>
 
           <h2>
             Our Goal
@@ -66,6 +148,24 @@ function About() {
           </p>
 
         </div>
+
+      </section>
+
+
+      {/* QUOTE */}
+      <section className="about-quote">
+
+        <div className="about-quote-icon">
+          ❝
+        </div>
+
+        <h2>
+          Every book opens a door to a new world.
+        </h2>
+
+        <p>
+          Explore. Learn. Read. Discover.
+        </p>
 
       </section>
 

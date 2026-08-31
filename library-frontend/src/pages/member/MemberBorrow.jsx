@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
+const API_URL = import.meta.env.VITE_API_URL
+
 function MemberBorrow() {
 
   const { bookId } = useParams()
   const navigate = useNavigate()
 
   const [book, setBook] = useState(null)
-
   const [dueDate, setDueDate] = useState('')
 
   const [loading, setLoading] = useState(true)
@@ -55,7 +56,12 @@ function MemberBorrow() {
     }
 
     fetch(
-      `http://localhost:5000/api/Books/${bookId}`
+      `${API_URL}/api/Books/${bookId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
     )
 
       .then(response => {
@@ -91,7 +97,7 @@ function MemberBorrow() {
 
 
   // ============================================================
-  // DEFAULT DUE DATE
+  // DEFAULT DUE DATE = 7 DAYS FROM TODAY
   // ============================================================
 
   useEffect(() => {
@@ -132,18 +138,46 @@ function MemberBorrow() {
     }
 
 
+    // ----------------------------------------------------------
+    // TODAY'S DATE
+    // ----------------------------------------------------------
+
+    const today =
+      new Date().toISOString().split('T')[0]
+
+
+    // ----------------------------------------------------------
+    // CHECK DUE DATE
+    // ----------------------------------------------------------
+
+    if (dueDate < today) {
+
+      setError(
+        'Due date cannot be before today.'
+      )
+
+      return
+
+    }
+
+
     try {
 
       setBorrowing(true)
 
 
+      // ========================================================
+      // SEND BORROW REQUEST
+      // ========================================================
+
       const response = await fetch(
-        'http://localhost:5000/api/Borrows',
+        `${API_URL}/api/Borrows`,
         {
           method: 'POST',
 
           headers: {
             'Content-Type': 'application/json',
+
             'Authorization': `Bearer ${token}`
           },
 
@@ -151,12 +185,20 @@ function MemberBorrow() {
 
             bookId: Number(bookId),
 
+            // IMPORTANT:
+            // Backend CreateBorrowDto expects BorrowDate
+            borrowDate: today,
+
             dueDate: dueDate
 
           })
         }
       )
 
+
+      // ========================================================
+      // READ RESPONSE
+      // ========================================================
 
       const responseText =
         await response.text()
@@ -178,6 +220,10 @@ function MemberBorrow() {
       }
 
 
+      // ========================================================
+      // HANDLE ERROR
+      // ========================================================
+
       if (!response.ok) {
 
         throw new Error(
@@ -192,14 +238,18 @@ function MemberBorrow() {
       }
 
 
+      // ========================================================
+      // SUCCESS
+      // ========================================================
+
       alert(
         `${book.title} borrowed successfully!`
       )
 
 
-      // --------------------------------------------------------
+      // ========================================================
       // GO TO MY BORROWED BOOKS
-      // --------------------------------------------------------
+      // ========================================================
 
       navigate('/member/borrowed')
 
@@ -212,7 +262,8 @@ function MemberBorrow() {
       )
 
       setError(
-        error.message
+        error.message ||
+        'Failed to borrow book.'
       )
 
     } finally {
@@ -246,10 +297,10 @@ function MemberBorrow() {
 
 
   // ============================================================
-  // ERROR
+  // ERROR / BOOK NOT FOUND
   // ============================================================
 
-  if (error || !book) {
+  if (error && !book) {
 
     return (
 
@@ -260,16 +311,36 @@ function MemberBorrow() {
         </h1>
 
         <p>
-          {error ||
-            'Unable to load this book.'}
+          {error}
         </p>
 
         <Link
-          to="/books"
+          to="/member/books"
           className="back-to-books"
         >
           ← Back to Books
         </Link>
+
+      </div>
+
+    )
+
+  }
+
+
+  if (!book) {
+
+    return (
+
+      <div className="book-details-page">
+
+        <h1>
+          Borrow Book
+        </h1>
+
+        <p>
+          Unable to load this book.
+        </p>
 
       </div>
 
@@ -340,14 +411,11 @@ function MemberBorrow() {
           </h2>
 
           <p>
-            By {book.authorName ||
-              'Unknown Author'}
+            By {book.authorName || 'Unknown Author'}
           </p>
 
           <p>
-            Available Copies:
-            {' '}
-            {book.availableCopies}
+            Available Copies: {book.availableCopies}
           </p>
 
         </div>
@@ -427,6 +495,7 @@ function MemberBorrow() {
     </div>
 
   )
+
 }
 
 export default MemberBorrow

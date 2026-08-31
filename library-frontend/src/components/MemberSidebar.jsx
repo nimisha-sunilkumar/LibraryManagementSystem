@@ -89,7 +89,19 @@ function MemberSidebar() {
           </NavLink>
 
         </li>
+{/* MY MESSAGES */}
 
+<li>
+  <NavLink to="/member/messages">
+
+    <span className="menu-icon">
+      💬
+    </span>
+
+    Messages
+
+  </NavLink>
+</li>
 
         <li>
 
