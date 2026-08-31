@@ -3,6 +3,7 @@ using System;
 using LibraryApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LibraryApi.Migrations
 {
     [DbContext(typeof(LibraryDbContext))]
-    partial class LibraryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260830041804_AddMessages")]
+    partial class AddMessages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -158,34 +161,6 @@ namespace LibraryApi.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("LibraryApi.Models.Conversation", b =>
-                {
-                    b.Property<int>("ConversationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ConversationId"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsClosed")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("MemberId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Subject")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("ConversationId");
-
-                    b.HasIndex("MemberId");
-
-                    b.ToTable("Conversations");
-                });
-
             modelBuilder.Entity("LibraryApi.Models.Member", b =>
                 {
                     b.Property<int>("MemberId")
@@ -247,14 +222,8 @@ namespace LibraryApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("ConversationId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsFromAdmin")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsRead")
                         .HasColumnType("boolean");
@@ -262,12 +231,14 @@ namespace LibraryApi.Migrations
                     b.Property<int>("MemberId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("MessageId");
-
-                    b.HasIndex("ConversationId");
 
                     b.HasIndex("MemberId");
 
@@ -356,25 +327,8 @@ namespace LibraryApi.Migrations
                     b.Navigation("Member");
                 });
 
-            modelBuilder.Entity("LibraryApi.Models.Conversation", b =>
-                {
-                    b.HasOne("LibraryApi.Models.Member", "Member")
-                        .WithMany()
-                        .HasForeignKey("MemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Member");
-                });
-
             modelBuilder.Entity("LibraryApi.Models.Message", b =>
                 {
-                    b.HasOne("LibraryApi.Models.Conversation", "Conversation")
-                        .WithMany("Messages")
-                        .HasForeignKey("ConversationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("LibraryApi.Models.Member", "Member")
                         .WithMany()
                         .HasForeignKey("MemberId")
@@ -386,8 +340,6 @@ namespace LibraryApi.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Conversation");
 
                     b.Navigation("Member");
 
@@ -419,11 +371,6 @@ namespace LibraryApi.Migrations
             modelBuilder.Entity("LibraryApi.Models.Category", b =>
                 {
                     b.Navigation("Books");
-                });
-
-            modelBuilder.Entity("LibraryApi.Models.Conversation", b =>
-                {
-                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("LibraryApi.Models.Member", b =>

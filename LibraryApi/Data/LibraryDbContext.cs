@@ -10,6 +10,11 @@ public class LibraryDbContext : DbContext
     {
     }
 
+
+    // ============================================================
+    // DATABASE TABLES
+    // ============================================================
+
     public DbSet<Book> Books { get; set; }
 
     public DbSet<Author> Authors { get; set; }
@@ -22,8 +27,11 @@ public class LibraryDbContext : DbContext
 
     public DbSet<Borrow> Borrows { get; set; }
 
-    // NEW
     public DbSet<UserAccount> UserAccounts { get; set; }
+
+    public DbSet<Message> Messages { get; set; }
+
+    public DbSet<Conversation> Conversations { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -68,22 +76,67 @@ public class LibraryDbContext : DbContext
 
 
         // ============================================================
-        // USER ACCOUNT
+        // USER ACCOUNT → MEMBER
         // ============================================================
 
         modelBuilder.Entity<UserAccount>()
             .HasKey(u => u.UserId);
 
-
-        // UserAccount → Member
-        //
-        // One Member can have one UserAccount.
-        // An Admin account can have no Member.
         modelBuilder.Entity<UserAccount>()
             .HasOne(u => u.Member)
             .WithOne()
             .HasForeignKey<UserAccount>(u => u.MemberId)
             .OnDelete(DeleteBehavior.SetNull);
+
+
+        // ============================================================
+        // CONVERSATION → MEMBER
+        // ============================================================
+
+        modelBuilder.Entity<Conversation>()
+            .HasKey(c => c.ConversationId);
+
+        modelBuilder.Entity<Conversation>()
+            .HasOne(c => c.Member)
+            .WithMany()
+            .HasForeignKey(c => c.MemberId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+
+        // ============================================================
+        // CONVERSATION → MESSAGES
+        // ============================================================
+
+        modelBuilder.Entity<Message>()
+            .HasKey(m => m.MessageId);
+
+        modelBuilder.Entity<Message>()
+            .HasOne(m => m.Conversation)
+            .WithMany(c => c.Messages)
+            .HasForeignKey(m => m.ConversationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+
+        // ============================================================
+        // MESSAGE → USER ACCOUNT
+        // ============================================================
+
+        modelBuilder.Entity<Message>()
+            .HasOne(m => m.User)
+            .WithMany()
+            .HasForeignKey(m => m.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+
+        // ============================================================
+        // MESSAGE → MEMBER
+        // ============================================================
+
+        modelBuilder.Entity<Message>()
+            .HasOne(m => m.Member)
+            .WithMany()
+            .HasForeignKey(m => m.MemberId)
+            .OnDelete(DeleteBehavior.Cascade);
 
 
         base.OnModelCreating(modelBuilder);
