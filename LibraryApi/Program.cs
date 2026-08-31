@@ -5,7 +5,6 @@ using LibraryApi.Data;
 using Scalar.AspNetCore;
 using System.Text;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // ============================================================
@@ -13,7 +12,6 @@ var builder = WebApplication.CreateBuilder(args);
 // ============================================================
 
 builder.Services.AddControllers();
-
 
 // ============================================================
 // CORS
@@ -30,7 +28,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-
 // ============================================================
 // DATABASE
 // ============================================================
@@ -39,7 +36,6 @@ builder.Services.AddDbContext<LibraryDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")
     ));
-
 
 // ============================================================
 // JWT AUTHENTICATION
@@ -101,12 +97,12 @@ builder.Services.AddAuthentication(
         }
     };
 });
+
 // ============================================================
 // AUTHORIZATION
 // ============================================================
 
 builder.Services.AddAuthorization();
-
 
 // ============================================================
 // OPENAPI
@@ -114,13 +110,38 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddOpenApi();
 
-
 // ============================================================
 // APPLICATION
 // ============================================================
 
 var app = builder.Build();
 
+// ============================================================
+// APPLY DATABASE MIGRATIONS
+// ============================================================
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider
+        .GetRequiredService<LibraryDbContext>();
+
+    try
+    {
+        Console.WriteLine("Checking database migrations...");
+
+        db.Database.Migrate();
+
+        Console.WriteLine("Database migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(
+            "DATABASE MIGRATION FAILED: " + ex.Message
+        );
+
+        throw;
+    }
+}
 
 // ============================================================
 // OPENAPI
@@ -131,7 +152,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
-
 
 // ============================================================
 // MIDDLEWARE
