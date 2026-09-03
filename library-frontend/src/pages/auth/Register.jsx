@@ -5,6 +5,11 @@ function Register() {
 
   const navigate = useNavigate()
 
+  // API URL comes from .env
+  // Local: http://localhost:5000
+  // Render: https://library-api-ywje.onrender.com
+  const API_URL = import.meta.env.VITE_API_URL
+
   const [formData, setFormData] = useState({
     fullName: '',
     admissionNumber: '',
@@ -18,6 +23,10 @@ function Register() {
   const [loading, setLoading] = useState(false)
 
 
+  // ============================================================
+  // HANDLE INPUT CHANGE
+  // ============================================================
+
   const handleChange = (event) => {
 
     const { name, value } = event.target
@@ -29,6 +38,10 @@ function Register() {
 
   }
 
+
+  // ============================================================
+  // REGISTER
+  // ============================================================
 
   const handleSubmit = async (event) => {
 
@@ -63,8 +76,12 @@ function Register() {
       setLoading(true)
 
 
+      // ==========================================================
+      // REGISTER API
+      // ==========================================================
+
       const response = await fetch(
-        'http://localhost:5000/api/Auth/register',
+        `${API_URL}/api/Auth/register`,
         {
           method: 'POST',
 
@@ -82,24 +99,49 @@ function Register() {
       )
 
 
-     const responseText = await response.text()
+      // ==========================================================
+      // READ RESPONSE
+      // ==========================================================
 
-let data
+      const responseText = await response.text()
 
-try {
-  data = JSON.parse(responseText)
-} catch {
-  data = responseText
-}
+      let data
 
-if (!response.ok) {
-  throw new Error(
-    typeof data === 'string'
-      ? data
-      : data.message || 'Registration failed.'
-  )
-}
+      try {
 
+        data = JSON.parse(responseText)
+
+      } catch {
+
+        data = responseText
+
+      }
+
+
+      console.log(
+        'REGISTER RESPONSE:',
+        data
+      )
+
+
+      // ==========================================================
+      // REGISTRATION FAILED
+      // ==========================================================
+
+      if (!response.ok) {
+
+        throw new Error(
+          typeof data === 'string'
+            ? data
+            : data.message || 'Registration failed.'
+        )
+
+      }
+
+
+      // ==========================================================
+      // REGISTRATION SUCCESS
+      // ==========================================================
 
       setSuccess(
         'Account created successfully! Redirecting to login...'
@@ -115,9 +157,15 @@ if (!response.ok) {
 
     } catch (error) {
 
-      console.error(error)
+      console.error(
+        'Registration error:',
+        error
+      )
 
-      setError(error.message)
+      setError(
+        error.message ||
+        'Unable to register.'
+      )
 
     } finally {
 
@@ -128,11 +176,19 @@ if (!response.ok) {
   }
 
 
+  // ============================================================
+  // REGISTER UI
+  // ============================================================
+
   return (
 
     <div className="auth-page">
 
       <div className="auth-card">
+
+        {/* ======================================================
+            HEADER
+        ====================================================== */}
 
         <div className="auth-header">
 
@@ -151,21 +207,41 @@ if (!response.ok) {
         </div>
 
 
+        {/* ======================================================
+            ERROR
+        ====================================================== */}
+
         {error && (
+
           <div className="auth-error">
             {error}
           </div>
+
         )}
 
 
+        {/* ======================================================
+            SUCCESS
+        ====================================================== */}
+
         {success && (
+
           <div className="auth-success">
             {success}
           </div>
+
         )}
 
 
+        {/* ======================================================
+            REGISTER FORM
+        ====================================================== */}
+
         <form onSubmit={handleSubmit}>
+
+          {/* ====================================================
+              FULL NAME
+          ==================================================== */}
 
           <div className="form-group">
 
@@ -186,6 +262,10 @@ if (!response.ok) {
           </div>
 
 
+          {/* ====================================================
+              ADMISSION NUMBER
+          ==================================================== */}
+
           <div className="form-group">
 
             <label htmlFor="admissionNumber">
@@ -204,6 +284,10 @@ if (!response.ok) {
 
           </div>
 
+
+          {/* ====================================================
+              EMAIL
+          ==================================================== */}
 
           <div className="form-group">
 
@@ -224,6 +308,10 @@ if (!response.ok) {
           </div>
 
 
+          {/* ====================================================
+              PASSWORD
+          ==================================================== */}
+
           <div className="form-group">
 
             <label htmlFor="password">
@@ -242,6 +330,10 @@ if (!response.ok) {
 
           </div>
 
+
+          {/* ====================================================
+              CONFIRM PASSWORD
+          ==================================================== */}
 
           <div className="form-group">
 
@@ -262,6 +354,10 @@ if (!response.ok) {
           </div>
 
 
+          {/* ====================================================
+              REGISTER BUTTON
+          ==================================================== */}
+
           <button
             type="submit"
             className="auth-button"
@@ -277,6 +373,10 @@ if (!response.ok) {
         </form>
 
 
+        {/* ======================================================
+            LOGIN LINK
+        ====================================================== */}
+
         <div className="auth-footer">
 
           <p>
@@ -290,6 +390,10 @@ if (!response.ok) {
         </div>
 
 
+        {/* ======================================================
+            BACK HOME
+        ====================================================== */}
+
         <Link
           to="/"
           className="back-home"
@@ -302,6 +406,7 @@ if (!response.ok) {
     </div>
 
   )
+
 }
 
 export default Register

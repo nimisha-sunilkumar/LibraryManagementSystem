@@ -7,6 +7,11 @@ function Login() {
   const navigate = useNavigate()
   const location = useLocation()
 
+  // API URL comes from .env
+  // Local: http://localhost:5000
+  // Render: https://library-api-ywje.onrender.com
+  const API_URL = import.meta.env.VITE_API_URL
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
@@ -33,7 +38,7 @@ function Login() {
       // ========================================================
 
       const response = await fetch(
-        'http://localhost:5000/api/Auth/login',
+        `${API_URL}/api/Auth/login`,
         {
           method: 'POST',
 
@@ -66,6 +71,7 @@ function Login() {
         data = responseText
 
       }
+
 
       console.log(
         'LOGIN RESPONSE:',
@@ -104,11 +110,6 @@ function Login() {
       // ========================================================
       // CLEAR OLD LOGIN INFORMATION
       // ========================================================
-
-      // IMPORTANT:
-      // We also remove the old "user" object.
-      // This prevents an old member/admin user from
-      // affecting the new login after refresh.
 
       localStorage.removeItem('token')
       localStorage.removeItem('userId')
@@ -166,9 +167,6 @@ function Login() {
       // ========================================================
       // SAVE COMPLETE USER OBJECT
       // ========================================================
-
-      // This is important for Navbar / Sidebar
-      // and for restoring login information after refresh.
 
       const loggedInUser = {
 
@@ -452,5 +450,6 @@ function Login() {
   )
 
 }
+
 
 export default Login
