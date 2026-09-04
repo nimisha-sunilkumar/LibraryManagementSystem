@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+const API_URL = import.meta.env.VITE_API_URL
 
 function Contact() {
 
@@ -51,7 +52,7 @@ function Contact() {
 
 
       const response = await fetch(
-        'http://localhost:5000/api/Messages',
+  `${API_URL}/api/Messages`,
         {
           method: 'POST',
 
