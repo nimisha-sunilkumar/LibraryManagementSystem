@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
+const API_URL = import.meta.env.VITE_API_URL
+
 function BookDetails() {
 
   const { id } = useParams()
@@ -32,7 +34,7 @@ function BookDetails() {
 
   useEffect(() => {
 
-    fetch(`http://localhost:5000/api/Books/${id}`)
+    fetch(`${API_URL}/api/Books/${id}`)
 
       .then(response => {
 
